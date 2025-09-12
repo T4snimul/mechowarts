@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Hide scrollbars but keep scrolling */
+.scroll-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+.scroll-hidden {
+  -ms-overflow-style: none; /* IE + Edge Legacy */
+  scrollbar-width: none; /* Firefox */
+}

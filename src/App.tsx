@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AppProvider } from '@/contexts/AppContext';
 import { ModalProvider, useModal } from '@/contexts/ModalContext';
+import { SettingsProvider } from '@/contexts/SettingsContext';
 import { Header } from '@/components/Header';
 import { GreatHall } from '@/components/GreatHall';
 import { ProfileGrid } from '@/components/Grid';
 import { Footer } from '@/components/Footer';
 import { WizardModal } from '@/components/ui/WizardModal';
+import { ScrollToTop } from '@/components/ui/ScrollToTop';
+import { MagicalBackground } from '@/components/ui/MagicalBackground';
 import { usePeopleFilter } from '@/hooks/usePeopleFilter';
 import { PEOPLE } from '@/data/people';
 import type { SortBy } from '@/types';
@@ -22,6 +25,9 @@ function AppContent() {
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Magical Background */}
+      <MagicalBackground />
+      
       {/* Skip to main content link */}
       <a
         href="#main-content"
@@ -89,6 +95,9 @@ function AppContent() {
         isOpen={!!activeModal}
         onClose={closeModal}
       />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }
@@ -96,11 +105,13 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppProvider initialPeople={PEOPLE}>
-        <ModalProvider>
-          <AppContent />
-        </ModalProvider>
-      </AppProvider>
+      <SettingsProvider>
+        <AppProvider initialPeople={PEOPLE}>
+          <ModalProvider>
+            <AppContent />
+          </ModalProvider>
+        </AppProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

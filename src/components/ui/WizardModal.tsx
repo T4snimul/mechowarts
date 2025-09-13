@@ -28,14 +28,39 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
           onClick={handleBackdropClick}
           className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            initial={{ 
+              scale: 0.9, 
+              opacity: 0, 
+              y: 50,
+              rotateX: -10
+            }}
+            animate={{ 
+              scale: 1, 
+              opacity: 1, 
+              y: 0,
+              rotateX: 0,
+              transition: {
+                type: "spring",
+                damping: 25,
+                stiffness: 300,
+                duration: 0.5
+              }
+            }}
+            exit={{ 
+              scale: 0.95, 
+              opacity: 0, 
+              y: 30,
+              rotateX: 5,
+              transition: {
+                duration: 0.2,
+                ease: "easeIn"
+              }
+            }}
             className="relative w-full h-full overflow-y-auto bg-white dark:bg-gray-900"
           >
             {/* Close button */}

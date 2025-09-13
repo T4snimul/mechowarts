@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { SettingsMenu } from '@/components/ui/SettingsMenu';
 
 interface HeaderProps {
   query: string;
@@ -122,12 +123,15 @@ export function Header({
               )}
             </div>
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
-                         hover:bg-white active:scale-95
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+            {/* Theme toggle and Settings */}
+            <div className="flex items-center gap-2">
+              <SettingsMenu />
+              
+              <button
+                onClick={toggleTheme}
+                className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
+                           hover:bg-white active:scale-95
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
                          dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
               title="Toggle theme"
               aria-label="Toggle theme"
@@ -152,6 +156,7 @@ export function Header({
                 <path d="M6.76 4.84 5.34 3.42 3.92 4.84l1.42 1.42 1.42-1.42zm10.48 0 1.42-1.42 1.42 1.42-1.42 1.42-1.42-1.42zM12 2h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm9-6h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm1.76 7.16-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM20.66 18.58l-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z" />
               </svg>
             </button>
+            </div>
           </div>
         </div>
       </div>

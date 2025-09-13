@@ -117,10 +117,30 @@ export function ProfileCard({ person, index }: ProfileCardProps) {
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: person.isSpecial ? 1.05 : 1.02 }}
-      transition={{ duration: 0.25, delay: index * 0.03 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        transition: { 
+          duration: 0.4, 
+          delay: index * 0.05,
+          ease: "easeOut"
+        }
+      }}
+      whileHover={{ 
+        y: -8, 
+        scale: person.isSpecial ? 1.08 : 1.05,
+        rotateY: 2,
+        transition: { 
+          duration: 0.3, 
+          ease: "easeOut" 
+        }
+      }}
+      whileTap={{ 
+        scale: 0.98,
+        transition: { duration: 0.1 }
+      }}
       onClick={handleCardClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

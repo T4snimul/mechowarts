@@ -126,7 +126,7 @@ export function generateAllHarryPotterPeople(): Person[] {
     people[dobbyIndex] = {
       ...people[dobbyIndex],
       id: "20",
-      roll: "2408020", 
+      roll: "2408020",
       bloodGroup: "Unknown",
       hometown: "Malfoy Manor",
       phone: "+8801999999999",

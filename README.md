@@ -1,11 +1,9 @@
 // manual
 
-- make the menu functional, i mean make it do what it says.
-- search doesn't work
-- don't blur the header when menu is open.
-
 // auto
 
+- keep the header normal when menu is opened
+- search doesn't work
 - stop growing the cards. grow the image only on hover
 - roll 20 is dobby. change the name, image, hometown and all relavant data.
 - modals don't always have to be full screen. it can be only to a certain screen width. it looks very big now.

@@ -1,7 +1,0 @@
-- scrollbar overflows
-- modal can be full screen on smaller devices.
-- roll 20 repeats.
-- searching something makes the whole site go blank
-- close button on modal can be sticky.
-- contact buttons can also be sticky after scrolling. before scrolling non-sticky. within the modal of course.
-- write a readme for the users of the site. easy and friendly.

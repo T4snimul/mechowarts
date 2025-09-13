@@ -48,15 +48,32 @@ function generateMagicalStory(name: string, house: string): string {
 }
 
 export function generateHarryPotterPerson(index: number): Person {
-  // Special logic for roll assignment to avoid duplicates
-  // Harry Potter (index 0) gets roll 009, others get sequential rolls but skip 009
-  let rollNumber: number;
-  if (index === 0) {
-    rollNumber = 9; // Harry Potter gets roll 009
-  } else if (index <= 8) {
-    rollNumber = index; // 1, 2, 3, 4, 5, 6, 7, 8 (skip 9 which is Harry's)
-  } else {
-    rollNumber = index + 1; // 10, 11, 12, ... (skip 9)
+  // Simple sequential roll numbering (1-60)
+  const rollNumber = index + 1;
+
+  // Special handling for Dobby (index 19, roll 20)
+  if (index === 19) {
+    return {
+      id: String(rollNumber),
+      roll: `2408020`, // Roll 20 for Dobby
+      name: "Dobby",
+      bloodGroup: getRandomItem(BLOOD_GROUPS),
+      hometown: "Malfoy Manor",
+      phone: `+8801${String(700000000 + rollNumber * 1000 + Math.floor(Math.random() * 1000))}`,
+      fb: `https://facebook.com/dobby.freeelf`,
+      avatar: HARRY_POTTER_IMAGES[index],
+      house: HOUSES[index % 4],
+      houseRoll: `${HOUSES[index % 4].substring(0, 2).toUpperCase()}${String(rollNumber).padStart(3, '0')}`,
+      houseRole: "Free Elf Hero",
+      status: 'active' as const,
+      isSpecial: true,
+      specialType: 'magical-being',
+      story: "Dobby is a free elf! Once enslaved by the Malfoy family, Dobby broke free from his bonds and became a symbol of courage and freedom. Known for his unwavering loyalty to Harry Potter and his willingness to sacrifice everything for his friends, Dobby proved that even the smallest beings can make the biggest difference in the wizarding world.",
+      skills: ["House-elf Magic", "Apparition", "Loyalty", "Bravery", "Protective Magic", "Cleaning Spells"],
+      patronus: "Sock (Symbol of Freedom)",
+      wand: "No wand needed - Elf Magic",
+      yearsAtHogwarts: 0 // Dobby never attended Hogwarts
+    };
   }
 
   const roll = `2408${String(rollNumber).padStart(3, '0')}`;

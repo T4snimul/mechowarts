@@ -25,29 +25,33 @@ function getHouseClasses(house) {
       return {
         ring: "from-rose-500/25 via-amber-400/20 to-rose-500/25",
         tint: "bg-rose-500/10",
-        chip: "bg-rose-500/20 text-rose-900 ring-rose-400/40 dark:bg-rose-400/15 dark:text-rose-200 dark:ring-rose-400/30",
+        chip: "bg-rose-500/25 text-rose-400 ring-rose-400/40 dark:bg-rose-400/15 dark:text-rose-200 dark:ring-rose-400/30",
         name: "text-rose-700 dark:text-rose-200",
+        roll: "dark:bg-rose-600 bg-rose-300/90 dark:text-rose-100 text-rose-900",
       };
     case "Slytherin":
       return {
         ring: "from-emerald-500/25 via-teal-400/20 to-emerald-500/25",
         tint: "bg-emerald-500/10",
-        chip: "bg-emerald-500/20 text-emerald-900 ring-emerald-400/40 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-400/30",
+        chip: "bg-emerald-500/25 text-emerald-400 ring-emerald-400/40 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-400/30",
         name: "text-emerald-700 dark:text-emerald-200",
+        roll: "dark:bg-emerald-600 bg-emerald-300/90 dark:text-emerald-100 text-emerald-900",
       };
     case "Ravenclaw":
       return {
         ring: "from-sky-500/25 via-indigo-400/20 to-sky-500/25",
         tint: "bg-sky-500/10",
-        chip: "bg-sky-500/20 text-sky-900 ring-sky-400/40 dark:bg-sky-400/15 dark:text-sky-200 dark:ring-sky-400/30",
+        chip: "bg-sky-500/25 text-sky-400 ring-sky-400/40 dark:bg-sky-400/15 dark:text-sky-200 dark:ring-sky-400/30",
         name: "text-indigo-700 dark:text-sky-200",
+        roll: "dark:bg-indigo-600 bg-indigo-300/90 dark:text-indigo-100 text-indigo-900",
       };
     case "Hufflepuff":
       return {
         ring: "from-amber-500/25 via-yellow-400/20 to-amber-500/25",
         tint: "bg-amber-500/10",
-        chip: "bg-amber-400/25 text-amber-900 ring-amber-400/40 dark:bg-amber-400/15 dark:text-amber-200 dark:ring-amber-400/30",
+        chip: "bg-amber-400/25 text-amber-400 ring-amber-400/40 dark:bg-amber-400/15 dark:text-amber-200 dark:ring-amber-400/30",
         name: "text-amber-700 dark:text-amber-200",
+        roll: "dark:bg-amber-600 bg-amber-300/90 dark:text-amber-100 text-amber-900",
       };
     default:
       return {
@@ -55,6 +59,7 @@ function getHouseClasses(house) {
         tint: "bg-indigo-500/10",
         chip: "bg-slate-200 text-slate-900 ring-slate-300/80 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-600",
         name: "text-slate-900 dark:text-slate-100",
+        roll: "dark:bg-slate-600 bg-slate-300/90 dark:text-slate-100 text-slate-900",
       };
   }
 }
@@ -62,7 +67,7 @@ function getHouseClasses(house) {
 export default function ProfileCard({ person, index }) {
   const { house, houseRoll, status } = person;
   const telHref = `tel:${(person.phone || "").replace(/[\s-]/g, "")}`;
-  const { ring, tint, chip, name: nameColor } = getHouseClasses(house);
+  const { ring, tint, chip, name: nameColor, roll } = getHouseClasses(house);
   const [copied, setCopied] = useState(false);
 
   const copyPhone = async () => {
@@ -101,19 +106,24 @@ export default function ProfileCard({ person, index }) {
       {/* Default gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent opacity-100 transition-opacity duration-300 group-hover:opacity-0 dark:from-black/65 dark:via-black/20" />
 
+      {/* Roll number badge (top-left) */}
+      <div className="absolute left-0 top-0 z-20">
+        <span
+          className={`inline-block rounded-br-full ${roll} px-6 py-1.5
+                 text-sm font-bold shadow-md`}
+        >
+          {person.roll}
+        </span>
+      </div>
+
       {/* Default chips + name */}
       <div className="absolute bottom-5 left-5 right-5 opacity-100 transition-opacity duration-300 group-hover:opacity-0">
         <div
-          className={`inline-flex max-w-full items-center gap-2 rounded-2xl bg-white/90 px-4 py-2 text-base font-semibold ring-1 ring-black/5 backdrop-blur-md dark:bg-white/10 dark:ring-white/10 ${nameColor}`}
+          className={`inline-flex max-w-full items-center gap-2 rounded-2xl bg-white/80 px-4 py-2 text-base font-semibold ring-1 ring-black/5 backdrop-blur-md dark:bg-white/10 dark:ring-white/10 ${nameColor}`}
         >
           <span className="truncate">{person.name}</span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-          <span
-            className={`rounded-full px-2.5 py-1 font-semibold ring-1 ${chip}`}
-          >
-            {person.roll}
-          </span>
           {house && (
             <span
               className={`rounded-full px-2.5 py-1 font-medium ring-1 ${chip}`}
@@ -122,7 +132,7 @@ export default function ProfileCard({ person, index }) {
             </span>
           )}
           {status && (
-            <span className="rounded-full bg-emerald-500/25 px-2.5 py-1 font-medium text-emerald-900 ring-1 ring-emerald-400/40 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-400/30">
+            <span className="rounded-full bg-emerald-500/25 px-2.5 py-1 font-medium text-emerald-400 ring-1 ring-emerald-400/40 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-400/30">
               {status}
             </span>
           )}

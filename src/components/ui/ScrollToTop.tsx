@@ -42,17 +42,26 @@ export function ScrollToTop() {
           <div className="relative">
             {/* Main button */}
             <div className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center">
-              {/* Hogwarts Crest */}
-              <img
-                src="https://static.wikia.nocookie.net/harrypotter/images/f/f7/Hogwarts_Crest_Thumb.jpg"
-                alt="Scroll to top"
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              {/* Arrow Up Icon */}
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 15l7-7 7 7"
+                />
+              </svg>
             </div>
-            
+
             {/* Magical glow effect */}
             <div className="absolute inset-0 w-12 h-12 rounded-full bg-purple-400/30 dark:bg-purple-300/20 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
+
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm px-3 py-1 rounded-lg whitespace-nowrap">

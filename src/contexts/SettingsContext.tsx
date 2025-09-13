@@ -4,19 +4,19 @@ interface SettingsContextType {
   // Animation preferences
   enableAnimations: boolean;
   setEnableAnimations: (enabled: boolean) => void;
-  
+
   // Background effects
   enableBackgroundEffects: boolean;
   setEnableBackgroundEffects: (enabled: boolean) => void;
-  
+
   // Performance settings
   reducedMotion: boolean;
   setReducedMotion: (reduced: boolean) => void;
-  
+
   // Layout preferences
   cardSize: 'small' | 'medium' | 'large';
   setCardSize: (size: 'small' | 'medium' | 'large') => void;
-  
+
   // Accessibility
   highContrast: boolean;
   setHighContrast: (enabled: boolean) => void;
@@ -77,7 +77,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   // Apply CSS custom properties for settings
   useEffect(() => {
     const root = document.documentElement;
-    
+
     if (reducedMotion) {
       root.style.setProperty('--animation-duration', '0s');
       root.style.setProperty('--transition-duration', '0s');

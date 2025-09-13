@@ -44,11 +44,9 @@ export function Select({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={cn(
-            'block w-full rounded-lg border border-gray-300 bg-white px-3 py-2',
-            'text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none',
-            'dark:border-gray-600 dark:bg-gray-800 dark:text-white',
-            'dark:focus:border-blue-400 dark:focus:ring-blue-400',
-            'transition-colors duration-200',
+            'block w-full rounded-lg border-2 border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700 px-4 py-2.5',
+            'text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:outline-none',
+            'transition-all duration-200 hover:border-purple-400 dark:hover:border-purple-400',
             'appearance-none cursor-pointer',
             error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : '',
             className

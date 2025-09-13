@@ -4,6 +4,7 @@ import type { ProfileCardProps } from '@/types';
 import { getHouseClasses, cn } from '@/utils';
 import { CharacterImage } from '@/components/ui/CharacterImage';
 import { useModal } from '@/contexts/ModalContext';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface CardContentDisplayProps {
   person: ProfileCardProps['person'];
@@ -11,6 +12,7 @@ interface CardContentDisplayProps {
 
 function CardContentDisplay({ person }: CardContentDisplayProps) {
   const { chip } = getHouseClasses(person.house);
+  const { enableAnimations } = useSettings();
 
   const handleContactClick = (e: React.MouseEvent, url: string) => {
     e.stopPropagation();
@@ -45,8 +47,8 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
         {/* Top: Hover hint */}
         <div className="flex justify-center">
           <motion.div
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={enableAnimations ? { y: -10, opacity: 0 } : false}
+            animate={enableAnimations ? { y: 0, opacity: 1 } : { y: 0, opacity: 1 }}
             className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-white/20"
           >
             <p className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-2">
@@ -60,9 +62,9 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
         {/* Bottom: Contact buttons */}
         <div className="flex justify-center gap-3">
           <motion.button
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+            initial={enableAnimations ? { scale: 0, rotate: -180 } : false}
+            animate={enableAnimations ? { scale: 1, rotate: 0 } : { scale: 1, rotate: 0 }}
+            transition={enableAnimations ? { delay: 0.1, type: "spring", stiffness: 300 } : {}}
             onClick={(e) => handleContactClick(e, `https://wa.me/${person.phone.replace(/[\s-]/g, '')}`)}
             className="p-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 pointer-events-auto"
             aria-label="Contact via WhatsApp"
@@ -73,9 +75,9 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
           </motion.button>
 
           <motion.button
-            initial={{ scale: 0, rotate: 180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+            initial={enableAnimations ? { scale: 0, rotate: 180 } : false}
+            animate={enableAnimations ? { scale: 1, rotate: 0 } : { scale: 1, rotate: 0 }}
+            transition={enableAnimations ? { delay: 0.2, type: "spring", stiffness: 300 } : {}}
             onClick={(e) => handleContactClick(e, person.fb)}
             className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 pointer-events-auto"
             aria-label="Visit Facebook profile"
@@ -92,6 +94,7 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
 
 export function ProfileCard({ person, index }: ProfileCardProps) {
   const { openModal } = useModal();
+  const { enableAnimations, cardSize } = useSettings();
   const { ring, tint, roll } = getHouseClasses(person.house);
 
   const handleCardClick = () => {
@@ -115,32 +118,44 @@ export function ProfileCard({ person, index }: ProfileCardProps) {
     }
   };
 
+  // Get height classes based on card size
+  const getCardHeightClasses = () => {
+    switch (cardSize) {
+      case 'small':
+        return 'h-[20rem]';
+      case 'large':
+        return 'h-[28rem]';
+      default: // medium
+        return 'h-[24rem]';
+    }
+  };
+
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ 
-        opacity: 1, 
-        y: 0, 
+      initial={enableAnimations ? { opacity: 0, y: 20, scale: 0.95 } : false}
+      animate={enableAnimations ? {
+        opacity: 1,
+        y: 0,
         scale: 1,
-        transition: { 
-          duration: 0.4, 
+        transition: {
+          duration: 0.4,
           delay: index * 0.05,
           ease: "easeOut"
         }
-      }}
-      whileHover={{ 
-        y: -8, 
+      } : { opacity: 1, y: 0, scale: 1 }}
+      whileHover={enableAnimations ? {
+        y: -8,
         scale: person.isSpecial ? 1.08 : 1.05,
         rotateY: 2,
-        transition: { 
-          duration: 0.3, 
-          ease: "easeOut" 
+        transition: {
+          duration: 0.3,
+          ease: "easeOut"
         }
-      }}
-      whileTap={{ 
+      } : {}}
+      whileTap={enableAnimations ? {
         scale: 0.98,
         transition: { duration: 0.1 }
-      }}
+      } : {}}
       onClick={handleCardClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -152,8 +167,9 @@ export function ProfileCard({ person, index }: ProfileCardProps) {
       role="button"
       aria-label={`View details for ${person.name}, ${person.house} house, roll number ${person.roll}`}
       className={cn(
-        'group relative h-[24rem] rounded-xl overflow-hidden bg-white/90 shadow-xl ring-1 ring-black/5 dark:bg-slate-900/70 dark:ring-white/10 cursor-pointer backdrop-blur-sm',
+        'group relative rounded-xl overflow-hidden bg-white/90 shadow-xl ring-1 ring-black/5 dark:bg-slate-900/70 dark:ring-white/10 cursor-pointer backdrop-blur-sm',
         'hover:shadow-2xl hover:ring-2 hover:ring-indigo-500/20 focus:shadow-2xl focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-all duration-300',
+        getCardHeightClasses(),
         getSpecialStyling()
       )}
       style={{ touchAction: 'manipulation' }}

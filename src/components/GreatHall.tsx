@@ -87,6 +87,19 @@ export function GreatHall({
 
           {/* Controls Row */}
           <div className="flex flex-wrap items-center gap-3">
+            {/* Clear Filters */}
+            <button
+              onClick={clearAllFilters}
+              className={`text-red-600 dark:text-red-400 text-sm font-medium hover:text-red-700 dark:hover:text-red-300 underline underline-offset-2 font-sans transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 rounded px-1 ${
+                hasActiveFilters
+                  ? 'opacity-100 pointer-events-auto'
+                  : 'opacity-0 pointer-events-none'
+              }`}
+              aria-hidden={!hasActiveFilters}
+            >
+              Clear All
+            </button>
+
             {/* Sort */}
             <CustomSelect
               value={sortBy}
@@ -110,19 +123,6 @@ export function GreatHall({
               options={bloodGroupOptions}
               placeholder="Filter by blood status"
             />
-
-            {/* Clear Filters */}
-            <button
-              onClick={clearAllFilters}
-              className={`text-red-600 dark:text-red-400 text-sm font-medium hover:text-red-700 dark:hover:text-red-300 underline underline-offset-2 font-sans transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 rounded px-1 ${
-                hasActiveFilters
-                  ? 'opacity-100 pointer-events-auto'
-                  : 'opacity-0 pointer-events-none'
-              }`}
-              aria-hidden={!hasActiveFilters}
-            >
-              Clear All
-            </button>
           </div>
         </div>
       </div>

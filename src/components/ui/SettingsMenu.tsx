@@ -41,9 +41,9 @@ export function SettingsMenu() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-black/20"
             />
-            
+
             {/* Settings Panel */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -76,27 +76,27 @@ export function SettingsMenu() {
                         type="checkbox"
                         checked={enableAnimations}
                         onChange={(e) => setEnableAnimations(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-5 h-5 text-purple-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-md focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400"
                       />
                     </label>
-                    
+
                     <label className="flex items-center justify-between">
                       <span className="text-sm text-gray-700 dark:text-gray-300">Background effects</span>
                       <input
                         type="checkbox"
                         checked={enableBackgroundEffects}
                         onChange={(e) => setEnableBackgroundEffects(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-5 h-5 text-purple-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-md focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400"
                       />
                     </label>
-                    
+
                     <label className="flex items-center justify-between">
                       <span className="text-sm text-gray-700 dark:text-gray-300">Reduced motion</span>
                       <input
                         type="checkbox"
                         checked={reducedMotion}
                         onChange={(e) => setReducedMotion(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-5 h-5 text-purple-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-md focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400"
                       />
                     </label>
                   </div>
@@ -110,7 +110,7 @@ export function SettingsMenu() {
                     <select
                       value={cardSize}
                       onChange={(e) => setCardSize(e.target.value as 'small' | 'medium' | 'large')}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 text-sm bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:border-purple-500 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400 text-gray-900 dark:text-gray-100"
                     >
                       <option value="small">Small</option>
                       <option value="medium">Medium</option>
@@ -128,7 +128,7 @@ export function SettingsMenu() {
                       type="checkbox"
                       checked={highContrast}
                       onChange={(e) => setHighContrast(e.target.checked)}
-                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      className="w-5 h-5 text-purple-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-md focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400"
                     />
                   </label>
                 </div>

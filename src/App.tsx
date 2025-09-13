@@ -27,7 +27,7 @@ function AppContent() {
     <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Magical Background */}
       <MagicalBackground />
-      
+
       {/* Skip to main content link */}
       <a
         href="#main-content"

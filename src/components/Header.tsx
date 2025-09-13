@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SettingsMenu } from '@/components/ui/SettingsMenu';
+import logo from '../../assets/logo-full.png'
 
 interface HeaderProps {
   query: string;
@@ -62,7 +63,7 @@ export function Header({
           {/* Logo */}
           <div className="h-8 w-36 overflow-hidden flex-shrink-0">
             <img
-              src="https://static.wikia.nocookie.net/harrypotter/images/f/f7/Hogwarts_Crest_Thumb.jpg"
+              src={logo}
               alt="MechoWarts School of Witchcraft and Wizardry - Navigate to home"
               className="block h-full w-full object-cover object-center dark:invert-[.9] dark:brightness-90 dark:contrast-75"
               role="img"
@@ -126,7 +127,7 @@ export function Header({
             {/* Theme toggle and Settings */}
             <div className="flex items-center gap-2">
               <SettingsMenu />
-              
+
               <button
                 onClick={toggleTheme}
                 className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100

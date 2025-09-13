@@ -30,7 +30,7 @@ export function ProfileCardSkeleton() {
           <div className="h-6 w-20 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
           <div className="h-6 w-12 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
         </div>
-        
+
         {/* Name */}
         <div className="h-8 w-3/4 bg-gray-300 dark:bg-gray-600 rounded-lg animate-pulse" />
       </div>

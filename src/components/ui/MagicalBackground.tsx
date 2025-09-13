@@ -1,6 +1,13 @@
 import { motion } from 'framer-motion';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export function MagicalBackground() {
+  const { enableBackgroundEffects } = useSettings();
+
+  // Don't render anything if background effects are disabled
+  if (!enableBackgroundEffects) {
+    return null;
+  }
   // Create random positions and delays for floating elements
   const floatingElements = Array.from({ length: 15 }, (_, i) => ({
     id: i,

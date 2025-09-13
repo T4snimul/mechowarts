@@ -33,15 +33,15 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
           className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
         >
           <motion.div
-            initial={{ 
-              scale: 0.9, 
-              opacity: 0, 
+            initial={{
+              scale: 0.9,
+              opacity: 0,
               y: 50,
               rotateX: -10
             }}
-            animate={{ 
-              scale: 1, 
-              opacity: 1, 
+            animate={{
+              scale: 1,
+              opacity: 1,
               y: 0,
               rotateX: 0,
               transition: {
@@ -51,9 +51,9 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
                 duration: 0.5
               }
             }}
-            exit={{ 
-              scale: 0.95, 
-              opacity: 0, 
+            exit={{
+              scale: 0.95,
+              opacity: 0,
               y: 30,
               rotateX: 5,
               transition: {

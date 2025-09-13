@@ -12,20 +12,28 @@ export function usePeopleFilter(
   bloodGroupFilter?: string
 ): Person[] {
   return useMemo(() => {
-    const normalizedQuery = query.toLowerCase().trim();
+    // Defensive programming: ensure we have valid data
+    if (!people || !Array.isArray(people)) {
+      return [];
+    }
+
+    const normalizedQuery = query?.toLowerCase().trim() || '';
 
     // Filter people based on query
     let filteredPeople = people;
 
     if (normalizedQuery) {
       filteredPeople = people.filter((person) => {
+        // Ensure person object exists
+        if (!person) return false;
+
         const searchableFields = [
-          person.name,
-          person.roll,
-          person.bloodGroup,
-          person.hometown,
-          person.phone,
-          person.house,
+          person.name || '',
+          person.roll || '',
+          person.bloodGroup || '',
+          person.hometown || '',
+          person.phone || '',
+          person.house || '',
         ];
 
         return searchableFields.some(field =>
@@ -37,14 +45,14 @@ export function usePeopleFilter(
     // Apply house filter
     if (houseFilter) {
       filteredPeople = filteredPeople.filter(person =>
-        person.house.toLowerCase() === houseFilter.toLowerCase()
+        person?.house?.toLowerCase() === houseFilter.toLowerCase()
       );
     }
 
     // Apply blood group filter
     if (bloodGroupFilter) {
       filteredPeople = filteredPeople.filter(person =>
-        person.bloodGroup === bloodGroupFilter
+        person?.bloodGroup === bloodGroupFilter
       );
     }
 

@@ -26,18 +26,18 @@ export default function Header({ query, setQuery, sortBy, setSortBy }) {
     <header
       className={[
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        scrolled ? "py-2" : "py-3",
+        scrolled ? "py-2 px-3" : "py-3",
       ].join(" ")}
     >
       <div
         className={[
           "relative mx-auto max-w-7xl px-4",
           // glass bar
-          "backdrop-blur-md bg-white/60 dark:bg-gray-900/60",
+          "backdrop-blur-md",
           // border + lift on scroll
           scrolled
-            ? "rounded-2xl ring-1 ring-black/5 dark:ring-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-            : "ring-1 ring-black/5 dark:ring-white/10 rounded-2xl",
+            ? "bg-white/60 dark:bg-gray-900/60 rounded-2xl ring-1 ring-black/5 dark:ring-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+            : "",
           "transition-all duration-300",
         ].join(" ")}
       >

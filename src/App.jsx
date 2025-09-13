@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("roll");
 
   const filtered = usePeopleFilter(PEOPLE, query, sortBy);
 

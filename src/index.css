@@ -1,5 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+/* Clean theme system with proper color definitions */
+:root {
+  /* Light mode colors */
+  --bg-primary: theme('colors.white');
+  --bg-secondary: theme('colors.gray.50');
+  --bg-tertiary: theme('colors.gray.100');
+  --text-primary: theme('colors.gray.900');
+  --text-secondary: theme('colors.gray.600');
+  --text-tertiary: theme('colors.gray.500');
+  --border-color: theme('colors.gray.200');
+  --accent-color: theme('colors.amber.500');
+}
+
+/* Dark mode colors */
+.dark {
+  --bg-primary: theme('colors.gray.900');
+  --bg-secondary: theme('colors.gray.800');
+  --bg-tertiary: theme('colors.gray.700');
+  --text-primary: theme('colors.gray.100');
+  --text-secondary: theme('colors.gray.300');
+  --text-tertiary: theme('colors.gray.400');
+  --border-color: theme('colors.gray.700');
+  --accent-color: theme('colors.amber.400');
+}
+
+/* Apply theme colors globally */
+:root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
 
 /* Elegant and readable typography */
 .font-display {

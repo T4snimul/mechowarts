@@ -150,8 +150,6 @@ interface HoverPanelProps {
 }
 
 function HoverPanel({ person, isOpen }: HoverPanelProps) {
-  const { name: nameColor } = getHouseClasses(person.house);
-
   return (
     <div
       className={cn(
@@ -162,7 +160,7 @@ function HoverPanel({ person, isOpen }: HoverPanelProps) {
       onClick={(e) => e.stopPropagation()}
     >
       <div className="mb-3">
-        <h3 className={cn('text-lg font-bold mb-1 text-gray-900 dark:text-white', nameColor)}>
+        <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">
           {person.name}
         </h3>
         <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -227,8 +225,8 @@ export function ProfileCard({ person, index }: ProfileCardProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-100 transition-opacity duration-300 group-hover:opacity-60 dark:from-black/75 dark:via-black/20 pointer-events-none" />
 
       {/* Roll badge */}
-      <div className="absolute left-0 top-0 z-20 pointer-events-none">
-        <span className={cn('inline-block rounded-br-lg px-4 py-1 text-xs font-bold shadow-lg font-sans', roll)}>
+      <div className="absolute -top-1 left-0 z-20 pointer-events-none">
+        <span className={cn('inline-block rounded-br-full px-6 py-1 text-xs font-bold shadow-lg font-sans', roll)}>
           {person.roll}
         </span>
       </div>

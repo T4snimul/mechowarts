@@ -18,24 +18,24 @@ function AppContent() {
   const filteredPeople = usePeopleFilter(PEOPLE, query, sortBy, houseFilter, bloodGroupFilter);
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-black dark:via-gray-950/90 dark:to-gray-900">
+    <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Magical decorative background layer */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Misty gradients */}
-        <div className="absolute -top-1/4 left-0 w-[44rem] h-[44rem] rounded-full bg-indigo-200/20 dark:bg-indigo-500/12 blur-3xl animate-float" />
-        <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full bg-purple-200/20 dark:bg-purple-500/12 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute -top-1/4 left-0 w-[44rem] h-[44rem] rounded-full bg-indigo-200/20 dark:bg-indigo-500/10 blur-3xl animate-float" />
+        <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full bg-purple-200/20 dark:bg-purple-500/10 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
 
         {/* Magical symbols */}
-        <div className="absolute top-20 left-12 text-gray-500/40 dark:text-gray-400/30 text-5xl animate-pulse-slow">
+        <div className="absolute top-20 left-12 text-gray-500/40 dark:text-gray-500/20 text-5xl animate-pulse-slow">
           ✦
         </div>
-        <div className="absolute bottom-40 right-20 text-gray-500/40 dark:text-gray-400/30 text-4xl animate-pulse-slow" style={{ animationDelay: '1s' }}>
+        <div className="absolute bottom-40 right-20 text-gray-500/40 dark:text-gray-500/25 text-4xl animate-pulse-slow" style={{ animationDelay: '1s' }}>
           ✷
         </div>
-        <div className="absolute top-1/3 right-1/4 text-gray-500/30 dark:text-gray-600/20 text-6xl animate-pulse-slow" style={{ animationDelay: '3s' }}>
+        <div className="absolute top-1/3 right-1/4 text-gray-500/30 dark:text-gray-500/20 text-6xl animate-pulse-slow" style={{ animationDelay: '3s' }}>
           ⚡
         </div>
-        <div className="absolute bottom-12 left-1/3 text-gray-500/35 dark:text-gray-600/25 text-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}>
+        <div className="absolute bottom-12 left-1/3 text-gray-500/35 dark:text-gray-500/25 text-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}>
           ☾
         </div>
       </div>

@@ -21,8 +21,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root = document.documentElement;
 
+    // Determine effective theme
     let effectiveTheme = theme;
     if (theme === 'system') {
       effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -30,14 +31,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         : 'light';
     }
 
+    // Apply theme class
     root.classList.remove('light', 'dark');
     root.classList.add(effectiveTheme);
 
+    // Set color scheme for better browser integration
+    root.style.colorScheme = effectiveTheme;
+
+    // Store preference
     localStorage.setItem('theme', theme);
+
+    // Handle system theme changes
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        const newTheme = e.matches ? 'dark' : 'light';
+        root.classList.remove('light', 'dark');
+        root.classList.add(newTheme);
+        root.style.colorScheme = newTheme;
+      };
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme(current => {
+      if (current === 'light') return 'dark';
+      if (current === 'dark') return 'light';
+      // If system, toggle based on current system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+    });
   };
 
   const value = {

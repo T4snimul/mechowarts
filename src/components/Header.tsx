@@ -38,8 +38,8 @@ export function Header({
           "backdrop-blur-md rounded-2xl",
           // border + lift on scroll
           scrolled
-            ? "bg-white/60 dark:bg-gray-700/70 ring-1 ring-black/5 dark:ring-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-            : "bg-white/40 dark:bg-gray-700/50",
+            ? "bg-white/80 dark:bg-gray-900/90 ring-1 ring-gray-200/50 dark:ring-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
+            : "bg-white/60 dark:bg-gray-900/80",
           "transition-all duration-300",
         ].join(" ")}
       >
@@ -51,7 +51,7 @@ export function Header({
           <div className="absolute bottom-0 right-10 text-gray-500/30 dark:text-gray-400/20 text-xl select-none">
             ✷
           </div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 text-gray-500/20 dark:text-gray-500/10 text-4xl select-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 text-gray-500/20 dark:text-gray-500/15 text-4xl select-none">
             ⚡
           </div>
         </div>
@@ -81,7 +81,7 @@ export function Header({
                 placeholder="Search name, roll, blood, hometown, phone..."
                 className="w-full rounded-2xl border border-gray-300/70 bg-white/90 px-4 py-2 pl-11 text-sm shadow-sm text-gray-900 placeholder-gray-500
                            focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white
-                           dark:border-gray-500/70 dark:bg-gray-600/85 dark:text-gray-100 dark:placeholder-gray-300 dark:focus:ring-amber-400 dark:focus:ring-offset-gray-900"
+                           dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-amber-400 dark:focus:ring-offset-gray-900"
               />
               {/* search icon */}
               <svg
@@ -105,7 +105,7 @@ export function Header({
               className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
                          hover:bg-white active:scale-95
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                         dark:border-gray-500/70 dark:bg-gray-600/80 dark:hover:bg-gray-600 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-gray-900"
+                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-gray-900"
               title="Toggle theme"
               aria-label="Toggle theme"
             >

@@ -120,5 +120,30 @@ export function generateAllHarryPotterPeople(): Person[] {
     };
   }
 
+  // Ensure Dobby has specific details
+  const dobbyIndex = people.findIndex(p => p.name === "Dobby");
+  if (dobbyIndex !== -1) {
+    people[dobbyIndex] = {
+      ...people[dobbyIndex],
+      id: "20",
+      roll: "2408020", 
+      bloodGroup: "Unknown",
+      hometown: "Malfoy Manor",
+      phone: "+8801999999999",
+      fb: "https://facebook.com/dobby.freeelf",
+      avatar: "https://static.wikia.nocookie.net/harrypotter/images/6/6f/Dobby_DH1.jpg",
+      house: "gryffindor", // Honorary house for his bravery
+      houseRoll: "GR020",
+      houseRole: "Free Elf Hero",
+      isSpecial: true,
+      specialType: "magical-being",
+      story: "Dobby is a free elf! Once enslaved by the Malfoy family, Dobby was freed by Harry Potter and became one of his most loyal friends. Known for his bravery, loyalty, and powerful magic, Dobby made the ultimate sacrifice to help Harry and his friends escape from Malfoy Manor. 'Such a beautiful place, to be with friends.'",
+      skills: ["House-elf Magic", "Apparition", "Protective Charms", "Cleaning Magic", "Clothes Magic"],
+      patronus: "Sock",
+      wand: "None (House-elf magic)",
+      yearsAtHogwarts: 0
+    };
+  }
+
   return people;
 }

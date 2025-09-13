@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SettingsMenu } from '@/components/ui/SettingsMenu';
-import logo from '../../assets/logo-full.png'
 
 interface HeaderProps {
   query: string;
@@ -63,7 +62,7 @@ export function Header({
           {/* Logo */}
           <div className="h-8 w-36 overflow-hidden flex-shrink-0">
             <img
-              src={logo}
+              src="/logo-full.png"
               alt="MechoWarts School of Witchcraft and Wizardry - Navigate to home"
               className="block h-full w-full object-cover object-center dark:invert-[.9] dark:brightness-90 dark:contrast-75"
               role="img"

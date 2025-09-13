@@ -30,8 +30,7 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={handleBackdropClick}
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
-        >
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <motion.div
             initial={{
               scale: 0.9,
@@ -61,12 +60,12 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
                 ease: "easeIn"
               }
             }}
-            className="relative w-full h-full overflow-y-auto bg-white dark:bg-gray-900"
+            className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
           >
             {/* Close button */}
             <button
               onClick={onClose}
-              className="fixed top-4 right-4 z-20 p-3 rounded-full bg-black/80 dark:bg-white/20 backdrop-blur-md hover:bg-black/90 dark:hover:bg-white/30 transition-all duration-200 text-white shadow-2xl"
+              className="absolute top-4 right-4 z-20 p-3 rounded-full bg-black/80 dark:bg-white/20 backdrop-blur-md hover:bg-black/90 dark:hover:bg-white/30 transition-all duration-200 text-white shadow-2xl"
               aria-label="Close modal"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,35 +184,86 @@ export function WizardModal({ person, isOpen, onClose }: WizardModalProps) {
                 </section>
               )}
 
-              {/* Contact Information */}
+              {/* Owl Post Information */}
               <section>
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <span className="text-3xl mr-3">📬</span>
-                  Owl Post & Contact
+                  <span className="text-3xl mr-3">🦉</span>
+                  Owl Post Delivery
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-red-500 text-xl">🩸</span>
-                      <span className="text-base font-medium text-gray-700 dark:text-gray-300">Blood Group</span>
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 border border-amber-200 dark:border-amber-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-red-500 text-xl">🩸</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Blood Status</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.bloodGroup}</p>
                     </div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.bloodGroup}</p>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-blue-500 text-xl">📍</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Owl Delivery Address</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.hometown}</p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-purple-500 text-xl">🪄</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Years at Hogwarts</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.yearsAtHogwarts || 'N/A'}</p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-emerald-500 text-xl">�</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Patronus</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.patronus || 'Unknown'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                    <p className="text-sm text-amber-800 dark:text-amber-200 flex items-center">
+                      <span className="text-lg mr-2">⚡</span>
+                      <span><strong>Magical Note:</strong> Owl post delivery guaranteed within 24 hours to any wizarding location. Standard Hogwarts postage rates apply.</span>
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Contact & Communication */}
+              <section>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <span className="text-3xl mr-3">📞</span>
+                  Muggle Communication
+                </h3>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-green-500 text-xl">📱</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Magical Phone</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{formatPhoneNumber(person.phone)}</p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-orange-500 text-xl">🔮</span>
+                        <span className="text-base font-medium text-gray-700 dark:text-gray-300">Wand</span>
+                      </div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.wand || 'Unknown'}</p>
+                    </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-blue-500 text-xl">📍</span>
-                      <span className="text-base font-medium text-gray-700 dark:text-gray-300">Hometown</span>
-                    </div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-lg">{person.hometown}</p>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-green-500 text-xl"></span>
-                      <span className="text-base font-medium text-gray-700 dark:text-gray-300">Phone</span>
-                    </div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-lg">{formatPhoneNumber(person.phone)}</p>
+                  <div className="mt-4 p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200 flex items-center">
+                      <span className="text-lg mr-2">📡</span>
+                      <span><strong>Ministry Notice:</strong> Muggle communication devices have been enchanted for magical use. Signal strength may vary near magical barriers.</span>
+                    </p>
                   </div>
                 </div>
               </section>

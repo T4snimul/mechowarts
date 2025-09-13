@@ -144,9 +144,7 @@ export function ProfileCard({ person, index }: ProfileCardProps) {
         }
       } : { opacity: 1, y: 0, scale: 1 }}
       whileHover={enableAnimations ? {
-        y: -8,
-        scale: person.isSpecial ? 1.08 : 1.05,
-        rotateY: 2,
+        y: -4,
         transition: {
           duration: 0.3,
           ease: "easeOut"

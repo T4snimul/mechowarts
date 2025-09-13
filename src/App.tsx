@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AppProvider } from '@/contexts/AppContext';
+import { ModalProvider, useModal } from '@/contexts/ModalContext';
 import { Header } from '@/components/Header';
 import { GreatHall } from '@/components/GreatHall';
 import { ProfileGrid } from '@/components/Grid';
 import { Footer } from '@/components/Footer';
+import { WizardModal } from '@/components/ui/WizardModal';
 import { usePeopleFilter } from '@/hooks/usePeopleFilter';
 import { PEOPLE } from '@/data/people';
 import type { SortBy } from '@/types';
@@ -14,29 +16,38 @@ function AppContent() {
   const [sortBy, setSortBy] = useState<SortBy>('roll');
   const [houseFilter, setHouseFilter] = useState('');
   const [bloodGroupFilter, setBloodGroupFilter] = useState('');
+  const { activeModal, closeModal } = useModal();
 
   const filteredPeople = usePeopleFilter(PEOPLE, query, sortBy, houseFilter, bloodGroupFilter);
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Skip to main content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
+
       {/* Magical decorative background layer */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         {/* Misty gradients */}
         <div className="absolute -top-1/4 left-0 w-[44rem] h-[44rem] rounded-full bg-indigo-200/20 dark:bg-indigo-500/10 blur-3xl animate-float" />
         <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full bg-purple-200/20 dark:bg-purple-500/10 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
 
         {/* Magical symbols */}
         <div className="absolute top-20 left-12 text-gray-500/40 dark:text-gray-500/20 text-5xl animate-pulse-slow">
-          ✦
+
         </div>
         <div className="absolute bottom-40 right-20 text-gray-500/40 dark:text-gray-500/25 text-4xl animate-pulse-slow" style={{ animationDelay: '1s' }}>
-          ✷
+
         </div>
         <div className="absolute top-1/3 right-1/4 text-gray-500/30 dark:text-gray-500/20 text-6xl animate-pulse-slow" style={{ animationDelay: '3s' }}>
-          ⚡
+
         </div>
         <div className="absolute bottom-12 left-1/3 text-gray-500/35 dark:text-gray-500/25 text-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}>
-          ☾
+
         </div>
       </div>
 
@@ -48,7 +59,7 @@ function AppContent() {
 
       {/* Main content */}
       <main
-        id="app-scroll"
+        id="main-content"
         className="scroll-hidden flex-1 min-h-0 overflow-y-auto pt-24 pb-12"
       >
         {/* The Great Hall Section */}
@@ -71,6 +82,13 @@ function AppContent() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Global Modal */}
+      <WizardModal
+        person={activeModal}
+        isOpen={!!activeModal}
+        onClose={closeModal}
+      />
     </div>
   );
 }
@@ -79,7 +97,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AppProvider initialPeople={PEOPLE}>
-        <AppContent />
+        <ModalProvider>
+          <AppContent />
+        </ModalProvider>
       </AppProvider>
     </ThemeProvider>
   );

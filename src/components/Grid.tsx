@@ -2,6 +2,7 @@ import React from 'react';
 import { ProfileCard } from './ProfileCard';
 import type { GridProps } from '@/types';
 import { cn } from '@/utils';
+import { MagicalLoading } from './ui/LoadingSpinner';
 
 interface EmptyStateProps {
   query?: string;
@@ -40,8 +41,8 @@ function EmptyState({ query }: EmptyStateProps) {
       {/* Subtitle */}
       <p className="mt-3 max-w-md text-sm text-slate-600 dark:text-slate-400 font-sans">
         {query
-          ? `The Marauder's Map shows no results for "${query}". Try casting a different spell ✨`
-          : 'The Marauder\'s Map is empty. Add some magical folk to see them here! ✨'
+          ? `The Marauder's Map shows no results for "${query}". Try casting a different spell`
+          : 'The Marauder\'s Map is empty. Add some magical folk to see them here!'
         }
       </p>
     </div>
@@ -67,9 +68,22 @@ function GridLayout({ children, className }: GridLayoutProps) {
 interface ProfileGridProps extends GridProps {
   query?: string;
   className?: string;
+  isLoading?: boolean;
 }
 
-export function ProfileGrid({ people, query, className }: ProfileGridProps) {
+function LoadingGrid() {
+  return (
+    <div className="flex items-center justify-center h-[60vh]">
+      <MagicalLoading message="Summoning wizards from the Great Hall..." />
+    </div>
+  );
+}
+
+export function ProfileGrid({ people, query, className, isLoading = false }: ProfileGridProps) {
+  if (isLoading) {
+    return <LoadingGrid />;
+  }
+
   if (people.length === 0) {
     return <EmptyState query={query} />;
   }

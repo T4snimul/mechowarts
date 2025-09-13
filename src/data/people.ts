@@ -1,72 +1,7 @@
 import type { Person } from '@/types';
+import { generateAllHarryPotterPeople } from '@/utils/harryPotterGenerator';
 
-export const PEOPLE: Person[] = [
-  {
-    id: "1",
-    roll: "2408001",
-    name: "Rafiul Hasan",
-    bloodGroup: "B+",
-    hometown: "Chattogram",
-    phone: "+8801XXXXXXXX1",
-    fb: "https://facebook.com/rafiul.hasan",
-    avatar: "https://i.pravatar.cc/160?img=15",
-    house: "gryffindor",
-    houseRoll: "GR001",
-    status: "active"
-  },
-  {
-    id: "2",
-    roll: "2408002",
-    name: "Tasnim Ahmed",
-    bloodGroup: "A+",
-    hometown: "Dhaka",
-    phone: "+8801XXXXXXXX2",
-    fb: "https://facebook.com/tasnim.ahmed",
-    avatar: "https://i.pravatar.cc/160?img=16",
-    house: "ravenclaw",
-    houseRoll: "RC001",
-    status: "active"
-  },
-  {
-    id: "3",
-    roll: "2408003",
-    name: "Shahidur Rahman",
-    bloodGroup: "O+",
-    hometown: "Sylhet",
-    phone: "+8801XXXXXXXX3",
-    fb: "https://facebook.com/shahidur.rahman",
-    avatar: "https://i.pravatar.cc/160?img=17",
-    house: "hufflepuff",
-    houseRoll: "HF001",
-    status: "active"
-  },
-  {
-    id: "4",
-    roll: "2408004",
-    name: "Fatima Khatun",
-    bloodGroup: "AB+",
-    hometown: "Rajshahi",
-    phone: "+8801XXXXXXXX4",
-    fb: "https://facebook.com/fatima.khatun",
-    avatar: "https://i.pravatar.cc/160?img=18",
-    house: "slytherin",
-    houseRoll: "SL001",
-    status: "active"
-  },
-  {
-    id: "5",
-    roll: "2408005",
-    name: "Mohammad Ali",
-    bloodGroup: "B-",
-    hometown: "Khulna",
-    phone: "+8801XXXXXXXX5",
-    fb: "https://facebook.com/mohammad.ali",
-    avatar: "https://i.pravatar.cc/160?img=21",
-    house: "gryffindor",
-    houseRoll: "GR002",
-    status: "active"
-  }
-];
+export const PEOPLE: Person[] = generateAllHarryPotterPeople();
 
 // Utility functions for working with people data
 export function getPersonById(id: string): Person | undefined {
@@ -77,24 +12,20 @@ export function getPersonByRoll(roll: string): Person | undefined {
   return PEOPLE.find(person => person.roll === roll);
 }
 
-export function getPeopleByHouse(house: Person['house']): Person[] {
+export function getPeopleByHouse(house: string): Person[] {
   return PEOPLE.filter(person => person.house === house);
 }
 
-export function getPeopleByStatus(status: Person['status']): Person[] {
-  return PEOPLE.filter(person => person.status === status);
-}
-
 export function getActivePeople(): Person[] {
-  return getPeopleByStatus('active');
+  return PEOPLE.filter(person => person.status === 'active');
 }
 
 export function getTotalPeopleCount(): number {
-  return PEOPLE.length;
+  return getActivePeople().length;
 }
 
-export function getActivePeopleCount(): number {
-  return getActivePeople().length;
+export function getSpecialPeople(): Person[] {
+  return PEOPLE.filter(person => person.isSpecial);
 }
 
 export function getHouseStatistics() {

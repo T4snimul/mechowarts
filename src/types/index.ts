@@ -10,7 +10,15 @@ export interface Person {
   avatar: string;
   house: 'gryffindor' | 'hufflepuff' | 'ravenclaw' | 'slytherin';
   houseRoll: string;
+  houseRole?: string;
   status: 'active' | 'inactive';
+  isSpecial?: boolean;
+  specialType?: 'hero' | 'villain' | 'magical-being';
+  story?: string;
+  skills?: string[];
+  patronus?: string;
+  wand?: string;
+  yearsAtHogwarts?: number;
 }
 
 export type SortBy = 'roll' | 'name' | 'bloodGroup' | 'hometown';

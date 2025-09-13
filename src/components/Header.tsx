@@ -14,7 +14,7 @@ export function Header({
   const { toggleTheme } = useTheme();
 
   useEffect(() => {
-    const scroller = document.getElementById("app-scroll") || window;
+    const scroller = document.getElementById("main-content") || window;
     const getY = () =>
       scroller === window ? window.scrollY : (scroller as HTMLElement).scrollTop;
 
@@ -46,13 +46,13 @@ export function Header({
         {/* Decorative subtle glyphs (background only) */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-6 left-8 text-gray-500/30 dark:text-gray-400/20 text-2xl select-none">
-            ✦
+
           </div>
           <div className="absolute bottom-0 right-10 text-gray-500/30 dark:text-gray-400/20 text-xl select-none">
-            ✷
+
           </div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 text-gray-500/20 dark:text-gray-500/15 text-4xl select-none">
-            ⚡
+
           </div>
         </div>
 
@@ -61,9 +61,10 @@ export function Header({
           {/* Logo */}
           <div className="h-8 w-36 overflow-hidden flex-shrink-0">
             <img
-              src="/assets/logo-full.png"
-              alt="MechoWarts Logo"
+              src="https://static.wikia.nocookie.net/harrypotter/images/f/f7/Hogwarts_Crest_Thumb.jpg"
+              alt="MechoWarts School of Witchcraft and Wizardry - Navigate to home"
               className="block h-full w-full object-cover object-center dark:invert-[.9] dark:brightness-90 dark:contrast-75"
+              role="img"
             />
           </div>
 
@@ -79,9 +80,9 @@ export function Header({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search name, roll, blood, hometown, phone..."
-                className="w-full rounded-2xl border border-gray-300/70 bg-white/90 px-4 py-2 pl-11 text-sm shadow-sm text-gray-900 placeholder-gray-500
-                           focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white
-                           dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-amber-400 dark:focus:ring-offset-gray-900"
+                className="w-full rounded-2xl border border-gray-300/70 bg-white/90 px-4 py-2 pl-11 pr-10 text-sm shadow-sm text-gray-900 placeholder-gray-500
+                           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white
+                           dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-purple-400 dark:focus:ring-offset-gray-900"
               />
               {/* search icon */}
               <svg
@@ -97,6 +98,28 @@ export function Header({
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
+              {/* clear button */}
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 dark:text-gray-400 dark:hover:text-gray-200"
+                  aria-label="Clear search"
+                  title="Clear search"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Theme toggle */}
@@ -104,8 +127,8 @@ export function Header({
               onClick={toggleTheme}
               className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
                          hover:bg-white active:scale-95
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-gray-900"
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
               title="Toggle theme"
               aria-label="Toggle theme"
             >

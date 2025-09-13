@@ -1,4 +1,5 @@
 import type { SortBy } from '@/types';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface GreatHallProps {
   sortBy: SortBy;
@@ -87,53 +88,41 @@ export function GreatHall({
           {/* Controls Row */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Sort */}
-            <select
+            <CustomSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortBy)}
-              className="border-b-2 border-gray-300 dark:border-gray-600 bg-transparent px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 font-sans transition-colors"
-            >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value} className="bg-white dark:bg-gray-800">
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSortBy(value as SortBy)}
+              options={sortOptions}
+              placeholder="Sort by"
+            />
 
             {/* House Filter */}
-            <select
+            <CustomSelect
               value={houseFilter}
-              onChange={(e) => setHouseFilter(e.target.value)}
-              className="border-b-2 border-gray-300 dark:border-gray-600 bg-transparent px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 font-sans transition-colors"
-            >
-              {houseOptions.map((option) => (
-                <option key={option.value} value={option.value} className="bg-white dark:bg-gray-800">
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              onChange={setHouseFilter}
+              options={houseOptions}
+              placeholder="Filter by house"
+            />
 
             {/* Blood Group Filter */}
-            <select
+            <CustomSelect
               value={bloodGroupFilter}
-              onChange={(e) => setBloodGroupFilter(e.target.value)}
-              className="border-b-2 border-gray-300 dark:border-gray-600 bg-transparent px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 font-sans transition-colors"
-            >
-              {bloodGroupOptions.map((option) => (
-                <option key={option.value} value={option.value} className="bg-white dark:bg-gray-800">
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              onChange={setBloodGroupFilter}
+              options={bloodGroupOptions}
+              placeholder="Filter by blood status"
+            />
 
             {/* Clear Filters */}
-            {hasActiveFilters && (
-              <button
-                onClick={clearAllFilters}
-                className="text-red-600 dark:text-red-400 text-sm font-medium hover:text-red-700 dark:hover:text-red-300 underline underline-offset-2 font-sans transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 rounded px-1"
-              >
-                Clear All
-              </button>
-            )}
+            <button
+              onClick={clearAllFilters}
+              className={`text-red-600 dark:text-red-400 text-sm font-medium hover:text-red-700 dark:hover:text-red-300 underline underline-offset-2 font-sans transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 rounded px-1 ${
+                hasActiveFilters
+                  ? 'opacity-100 pointer-events-auto'
+                  : 'opacity-0 pointer-events-none'
+              }`}
+              aria-hidden={!hasActiveFilters}
+            >
+              Clear All
+            </button>
           </div>
         </div>
       </div>

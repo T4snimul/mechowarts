@@ -31,7 +31,7 @@ export const specialCharacterImages = {
 };
 
 // Get character image with fallback
-export async function getCharacterAvatar(person: {
+export async function getCharacterAvatar(_person: {
   name: string;
   isSpecial?: boolean;
   specialType?: string;

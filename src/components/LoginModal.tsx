@@ -6,25 +6,39 @@ import { Input } from '@/components/ui/Input';
 
 export function LoginModal({ onSuccess }: { onSuccess?: () => void }) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, isLoading, error, clearError } = useAuth();
-  const { errors, validateEmail, validatePassword, clearErrors } = useAuthValidation();
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const { sendMagicLink, isLoading, error, clearError } = useAuth();
+  const { errors, validateEmail, clearErrors } = useAuthValidation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearErrors();
 
-    if (!validateEmail(email) || !validatePassword(password)) {
+    if (!validateEmail(email)) {
       return;
     }
 
-    try {
-      await login(email, password);
+    const success = await sendMagicLink(email);
+    if (success) {
+      setMagicLinkSent(true);
       onSuccess?.();
-    } catch {
-      // Error is handled by useAuth context
     }
   };
+
+  if (magicLinkSent) {
+    return (
+      <div className="w-full max-w-md mx-auto text-center">
+        <div className="p-6 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
+          <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+            Magic Link Sent! ✨
+          </h2>
+          <p className="text-green-700 dark:text-green-300">
+            Check your email ({email}) for a login link. The link will expire in 1 hour.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -46,7 +60,7 @@ export function LoginModal({ onSuccess }: { onSuccess?: () => void }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Email
+            RUET Email
           </label>
           <Input
             type="email"
@@ -57,25 +71,13 @@ export function LoginModal({ onSuccess }: { onSuccess?: () => void }) {
             className={errors.email ? 'border-red-500' : ''}
           />
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Password
-          </label>
-          <Input
-            type="password"
-            placeholder="••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            className={errors.password ? 'border-red-500' : ''}
-          />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            We'll send you a magic link to sign in - no password needed!
+          </p>
         </div>
 
         <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Sending...' : 'Send Magic Link'}
         </Button>
       </form>
     </div>

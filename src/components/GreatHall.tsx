@@ -74,28 +74,28 @@ export function GreatHall({
   ].filter(Boolean) as { label: string; value: string; clear: () => void }[];
 
   return (
-    <section className="mx-auto max-w-5xl px-4 sm:px-6 py-3">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-6">
       {/* Hero Section */}
-      <div className="text-center mb-4">
-        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="text-center mb-3">
+        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1.5">
           The Great Hall
         </h1>
-        <p className="font-sans text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-1">
+        <p className="font-sans text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-1">
           Welcome to the heart of MechoWarts, where students from all four houses gather.
           Here you'll find our brilliant wizards and witches, each with their unique talents and magical heritage.
         </p>
-        <p className="font-sans text-xs sm:text-sm italic text-gray-500 dark:text-gray-400">
+        <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400">
           "It is our choices that show what we truly are, far more than our abilities." - Albus Dumbledore
         </p>
       </div>
 
       {/* Flat Controls */}
-      <div className="border-b border-gray-200/60 dark:border-gray-700/60 pb-3 mb-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+      <div className="border-b border-gray-200/60 dark:border-gray-700/60 pb-2 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           {/* Stats */}
-          <div className="font-display text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+          <div className="font-display text-base sm:text-lg font-bold text-gray-900 dark:text-white">
             <span className="text-amber-600 dark:text-amber-400">{filteredCount !== totalCount ? filteredCount : totalCount}</span>
-            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2 font-sans">
+            <span className="text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400 ml-2 font-sans">
               {filteredCount !== totalCount ? `of ${totalCount} wizards` : 'wizards enrolled'}
             </span>
             {currentPage && totalPages && startIndex !== undefined && endIndex !== undefined && filteredCount > 0 && (

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { ProfileCardProps } from '@/types';
 import { getHouseClasses, cn } from '@/utils';
 import { CharacterImage } from '@/components/ui/CharacterImage';
+import { CardContextMenu } from '@/components/ui/CardContextMenu';
 import { useSettings } from '@/contexts/SettingsContext';
 
 interface CardContentDisplayProps {
@@ -22,33 +23,24 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
     <>
       {/* Default content - shown when not hovering */}
       <div className={cn(
-        'absolute bottom-4 left-4 right-4 transition-opacity duration-300 pointer-events-none',
+        'absolute bottom-3 left-3 right-3 transition-opacity duration-300 pointer-events-none',
         'opacity-100 group-hover:opacity-0'
       )}>
-        <div className="flex flex-wrap gap-2 mb-2">
-          <span className={cn('rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide', chip)}>
-            {person.house}
-          </span>
-          <span className={cn('rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide', chip)}>
-            {person.bloodGroup}
+        <div className="flex flex-wrap gap-1 mb-2">
+          <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide', chip)}>
+            {person.house.charAt(0).toUpperCase() + person.house.slice(1)}
           </span>
         </div>
-        <h3 className="text-2xl font-bold text-white drop-shadow-2xl bg-gradient-to-r from-black/70 to-transparent rounded-lg px-3 py-2 backdrop-blur-sm">
+        <h3 className="text-lg font-bold text-white drop-shadow-xl bg-gradient-to-r from-black/80 to-transparent rounded-md px-2 py-1.5 backdrop-blur-sm line-clamp-2">
           {person.name}
         </h3>
-        <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-white/90">
-          <span className="inline-flex items-center gap-1 rounded-full bg-black/40 px-2.5 py-1 backdrop-blur-sm">
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M9 3h6v2H9zM5 7h14v2H5zM7 11h10v2H7zM5 15h14v2H5zM9 19h6v2H9z" />
-            </svg>
-            Roll {person.roll}
+        <div className="mt-1 flex gap-1 text-[9px] font-semibold text-white/85 line-clamp-2">
+          <span className="inline-flex items-center gap-0.5 rounded-full bg-black/50 px-1.5 py-0.5 backdrop-blur-sm whitespace-nowrap">
+            #{person.roll}
           </span>
           {person.hometown && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 backdrop-blur-sm">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
-              </svg>
-              {person.hometown}
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-black/40 px-1.5 py-0.5 backdrop-blur-sm truncate">
+              📍 {person.hometown}
             </span>
           )}
         </div>
@@ -108,13 +100,20 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
 }
 
 export function ProfileCard({ person, index, onOpenPerson }: ProfileCardProps) {
-  const { enableAnimations, cardSize } = useSettings();
-  const { ring, tint, roll } = getHouseClasses(person.house);
+  const { enableAnimations } = useSettings();
+  const { ring } = getHouseClasses(person.house);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const handleCardClick = () => {
     if (onOpenPerson) {
       onOpenPerson(person);
     }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
   // Special styling for special characters
@@ -133,111 +132,92 @@ export function ProfileCard({ person, index, onOpenPerson }: ProfileCardProps) {
     }
   };
 
-  // Get height classes based on card size
-  const getCardHeightClasses = () => {
-    switch (cardSize) {
-      case 'small':
-        return 'h-[20rem]';
-      case 'large':
-        return 'h-[28rem]';
-      default: // medium
-        return 'h-[24rem]';
-    }
-  };
+  // Fixed card height for consistent layout (large size)
+  const cardHeight = 'h-[18rem] sm:h-[20rem]';
 
   return (
-    <motion.article
-      initial={enableAnimations ? { opacity: 0, y: 20, scale: 0.95 } : false}
-      animate={enableAnimations ? {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: {
-          duration: 0.4,
-          delay: index * 0.05,
-          ease: "easeOut"
-        }
-      } : { opacity: 1, y: 0, scale: 1 }}
-      whileHover={enableAnimations ? {
-        y: -4,
-        transition: {
-          duration: 0.3,
-          ease: "easeOut"
-        }
-      } : {}}
-      whileTap={enableAnimations ? {
-        scale: 0.98,
-        transition: { duration: 0.1 }
-      } : {}}
-      onClick={handleCardClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      aria-label={`View details for ${person.name}, ${person.house} house, roll number ${person.roll}`}
-      className={cn(
-        'group relative rounded-xl overflow-hidden bg-white/90 shadow-xl ring-1 ring-black/5 dark:bg-slate-900/70 dark:ring-white/10 cursor-pointer backdrop-blur-sm',
-        'hover:shadow-2xl hover:ring-2 hover:ring-indigo-500/20 focus:shadow-2xl focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-all duration-300',
-        getCardHeightClasses(),
-        getSpecialStyling()
-      )}
-      style={{ touchAction: 'manipulation' }}
-    >
-      {/* Magical particle effect */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div className="absolute top-2 left-2 w-1 h-1 bg-purple-400 rounded-full animate-ping" />
-        <div className="absolute top-6 right-4 w-1 h-1 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute bottom-8 left-6 w-1 h-1 bg-emerald-400 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
-      </div>
-
-      {/* Glow effect */}
-      <div className={cn(
-        'pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100',
-        ring
-      )} />
-
-      {/* Background image */}
-      <CharacterImage
-        person={person}
-        alt={person.name}
+    <>
+      <motion.article
+        initial={enableAnimations ? { opacity: 0, y: 20, scale: 0.95 } : false}
+        animate={enableAnimations ? {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {
+            duration: 0.4,
+            delay: index * 0.05,
+            ease: "easeOut"
+          }
+        } : { opacity: 1, y: 0, scale: 1 }}
+        whileHover={enableAnimations ? {
+          y: -4,
+          transition: {
+            duration: 0.3,
+            ease: "easeOut"
+          }
+        } : {}}
+        whileTap={enableAnimations ? {
+          scale: 0.98,
+          transition: { duration: 0.1 }
+        } : {}}
+        onClick={handleCardClick}
+        onContextMenu={handleContextMenu}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label={`View details for ${person.name}, ${person.house} house, roll number ${person.roll}`}
         className={cn(
-          'absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out pointer-events-none',
-          'group-hover:scale-110'
+          'group relative rounded-xl overflow-hidden bg-white/90 shadow-xl ring-1 ring-black/5 dark:bg-slate-900/70 dark:ring-white/10 cursor-pointer backdrop-blur-sm',
+          'hover:shadow-2xl hover:ring-2 hover:ring-indigo-500/20 focus:shadow-2xl focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-all duration-300',
+          cardHeight,
+          getSpecialStyling()
         )}
+        style={{ touchAction: 'manipulation' }}
+      >
+        {/* Magical particle effect */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+          <div className="absolute top-2 left-2 w-1 h-1 bg-purple-400 rounded-full animate-ping" />
+          <div className="absolute top-6 right-4 w-1 h-1 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
+          <div className="absolute bottom-8 left-6 w-1 h-1 bg-emerald-400 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+        </div>
+
+        {/* Glow effect */}
+        <div className={cn(
+          'pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100',
+          ring
+        )} />
+
+        {/* Background image */}
+        <CharacterImage
+          person={person}
+          alt={person.name}
+          className={cn(
+            'absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out pointer-events-none',
+            'group-hover:scale-110'
+          )}
+        />
+
+        {/* Enhanced gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-100 transition-opacity duration-300 group-hover:opacity-60 dark:from-black/75 dark:via-black/20 pointer-events-none" />
+
+        {/* Roll badge */}
+        {/* Default content */}
+        <CardContentDisplay person={person} />
+      </motion.article>
+
+      <CardContextMenu
+        person={person}
+        isOpen={contextMenu !== null}
+        position={contextMenu || { x: 0, y: 0 }}
+        onClose={() => setContextMenu(null)}
+        onViewProfile={handleCardClick}
+        onContact={() => { }}
       />
-
-      {/* Tint overlay */}
-      <div className={cn('absolute inset-0 mix-blend-soft-light pointer-events-none', tint)} />
-
-      {/* Enhanced gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-100 transition-opacity duration-300 group-hover:opacity-60 dark:from-black/75 dark:via-black/20 pointer-events-none" />
-
-      {/* Roll badge */}
-      <div className="absolute -top-1 left-0 z-20 pointer-events-none">
-        <span className={cn(
-          'inline-block rounded-br-full px-6 py-1 text-xs font-bold shadow-lg font-sans',
-          roll,
-          person.isSpecial && person.specialType === 'hero' && 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 animate-pulse',
-          person.isSpecial && person.specialType === 'villain' && 'bg-gradient-to-r from-red-500 to-red-700 text-red-100 animate-pulse',
-          person.isSpecial && person.specialType === 'magical-being' && 'bg-gradient-to-r from-purple-400 to-purple-600 text-purple-100 animate-pulse'
-        )}>
-          {person.roll}
-        </span>
-        {person.isSpecial && (
-          <div className="absolute -top-1 -right-1">
-            {person.specialType === 'hero' && <span className="text-yellow-400 text-lg animate-bounce"></span>}
-            {person.specialType === 'villain' && <span className="text-red-500 text-lg animate-bounce"></span>}
-            {person.specialType === 'magical-being' && <span className="text-purple-400 text-lg animate-bounce"></span>}
-          </div>
-        )}
-      </div>
-
-      {/* Default content */}
-      <CardContentDisplay person={person} />
-    </motion.article>
+    </>
   );
 }

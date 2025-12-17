@@ -13,10 +13,6 @@ interface SettingsContextType {
   reducedMotion: boolean;
   setReducedMotion: (reduced: boolean) => void;
 
-  // Layout preferences
-  cardSize: 'small' | 'medium' | 'large';
-  setCardSize: (size: 'small' | 'medium' | 'large') => void;
-
   // Accessibility
   highContrast: boolean;
   setHighContrast: (enabled: boolean) => void;
@@ -43,11 +39,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : systemPreference;
   });
 
-  const [cardSize, setCardSize] = useState<'small' | 'medium' | 'large'>(() => {
-    const saved = localStorage.getItem('mechowarts-card-size');
-    return (saved as 'small' | 'medium' | 'large') || 'medium';
-  });
-
   const [highContrast, setHighContrast] = useState(() => {
     const saved = localStorage.getItem('mechowarts-high-contrast');
     const systemPreference = window.matchMedia('(prefers-contrast: high)').matches;
@@ -66,10 +57,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('mechowarts-reduced-motion', JSON.stringify(reducedMotion));
   }, [reducedMotion]);
-
-  useEffect(() => {
-    localStorage.setItem('mechowarts-card-size', cardSize);
-  }, [cardSize]);
 
   useEffect(() => {
     localStorage.setItem('mechowarts-high-contrast', JSON.stringify(highContrast));
@@ -101,8 +88,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setEnableBackgroundEffects,
     reducedMotion,
     setReducedMotion,
-    cardSize,
-    setCardSize,
     highContrast,
     setHighContrast,
   };

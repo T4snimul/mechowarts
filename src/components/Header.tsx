@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { SettingsMenu } from '@/components/ui/SettingsMenu';
 import { AuthModal } from '@/components/AuthModal';
-import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/Button';
 
 interface HeaderProps {
@@ -19,9 +18,30 @@ export function Header({
   const [scrolled, setScrolled] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
   const { toggleTheme } = useTheme();
-  const { isAuthenticated } = useAuth();
-  const { enableBackgroundEffects, setEnableBackgroundEffects } = useSettings();
+  const { isAuthenticated, user, logout } = useAuth();
+  const {
+    enableAnimations,
+    setEnableAnimations,
+    enableBackgroundEffects,
+    setEnableBackgroundEffects,
+    reducedMotion,
+    setReducedMotion,
+    highContrast,
+    setHighContrast,
+  } = useSettings();
+  const actionsRef = useRef<HTMLDivElement | null>(null);
+  const mobileActionsRef = useRef<HTMLDivElement | null>(null);
+  const location = useLocation();
+
+  const navLinkClass = (path: string) => [
+    "px-3 py-1.5 rounded-xl text-sm font-medium transition",
+    location.pathname === path
+      ? "bg-purple-100/70 text-purple-800 ring-1 ring-purple-200/80 dark:bg-purple-900/40 dark:text-purple-100 dark:ring-purple-800/60"
+      : "text-gray-700 hover:bg-gray-100/70 dark:text-gray-300 dark:hover:bg-gray-800/70",
+  ].join(" ");
 
   useEffect(() => {
     const scroller = document.getElementById("main-content") || window;
@@ -34,18 +54,191 @@ export function Header({
     return () => scroller.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (actionsRef.current && !actionsRef.current.contains(target)) {
+        setActionsOpen(false);
+      }
+      if (mobileActionsRef.current && !mobileActionsRef.current.contains(target)) {
+        setMobileActionsOpen(false);
+      }
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActionsOpen(false);
+        setMobileActionsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, []);
+
+  const renderMenuContent = (closeMenu: () => void, positionClass = "right-0") => (
+    <div className={`absolute ${positionClass} mt-2 w-64 rounded-xl bg-white/95 dark:bg-gray-900/95 shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-md z-50`}>
+      <div className="px-4 py-3 border-b border-gray-200/70 dark:border-gray-700/50">
+        {isAuthenticated ? (
+          <div className="space-y-0.5">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.name || 'Signed in'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-700 dark:text-gray-300">Welcome to MechoWarts</p>
+        )}
+      </div>
+
+      <div className="p-3 space-y-2">
+        <button
+          onClick={() => {
+            toggleTheme();
+            closeMenu();
+          }}
+          className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            Toggle theme
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Light/Dark</span>
+        </button>
+
+        {/* Divider */}
+        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
+
+        {/* Settings toggles inline */}
+        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 8v8M8 12h8" />
+            </svg>
+            Animations
+          </span>
+          <input
+            type="checkbox"
+            checked={enableAnimations}
+            onChange={(e) => setEnableAnimations(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
+          />
+        </label>
+
+        <button
+          onClick={() => {
+            setEnableBackgroundEffects(!enableBackgroundEffects);
+            closeMenu();
+          }}
+          className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2.2 14.7 8l5.8.8-4.3 4.1 1 6-5.2-3-5.2 3 1-6L3.5 8.8 9.3 8l2.7-5.8Z" />
+            </svg>
+            Magical background
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{enableBackgroundEffects ? 'On' : 'Off'}</span>
+        </button>
+
+        {/* Divider */}
+        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
+
+        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 4h16v16H4z" />
+            </svg>
+            Reduced motion
+          </span>
+          <input
+            type="checkbox"
+            checked={reducedMotion}
+            onChange={(e) => setReducedMotion(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
+          />
+        </label>
+
+        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
+          <span className="flex items-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 4h16M4 12h16M4 20h16" />
+            </svg>
+            High contrast
+          </span>
+          <input
+            type="checkbox"
+            checked={highContrast}
+            onChange={(e) => setHighContrast(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
+          />
+        </label>
+
+        {/* Divider */}
+        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
+
+        {isAuthenticated ? (
+          <button
+            onClick={() => {
+              logout();
+              closeMenu();
+            }}
+            className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/30"
+          >
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M16 13v-2H7V8l-5 4 5 4v-3h9z" />
+              </svg>
+              Logout
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Exit</span>
+          </button>
+        ) : (
+          <Button
+            onClick={() => {
+              setAuthModalOpen(true);
+              closeMenu();
+            }}
+            variant="outline"
+            className="w-full justify-between px-3 py-2.5"
+            size="sm"
+          >
+            <span className="flex items-center gap-2">
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              Sign in
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Auth</span>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <header
       className={[
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        scrolled ? "py-2 px-3" : "py-3",
+        scrolled ? "py-2" : "py-2.5",
       ].join(" ")}
     >
+      {/* Desktop Header - Rounded with margins */}
       <div
         className={[
-          "relative mx-auto max-w-5xl px-4 sm:px-6 md:px-8 py-3",
+          "hidden sm:block relative mx-auto px-4 sm:px-6 md:px-8 py-2 rounded-xl sm:mx-2 md:mx-4 lg:mx-6",
           // glass bar with rounded corners
-          "backdrop-blur-md rounded-xl",
+          "backdrop-blur-md",
           // border + lift on scroll
           scrolled
             ? "bg-white/80 dark:bg-gray-900/90 ring-1 ring-purple-200/50 dark:ring-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
@@ -68,11 +261,11 @@ export function Header({
 
         {/* Content */}
         <div className="relative flex flex-wrap items-center justify-between gap-3 md:gap-4 py-1">
-          {/* Logo + section tag */}
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-[10rem]">
-            <a
-              href="/"
-              className="group h-9 w-36 md:w-40 overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+          {/* Logo + Nav */}
+          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0 min-w-[10rem]">
+            <Link
+              to="/"
+              className="group h-9 w-36 md:w-40 overflow-hidden rounded-xl"
               aria-label="Go to home"
             >
               <img
@@ -81,11 +274,14 @@ export function Header({
                 className="block h-full w-full object-cover object-center transition duration-200 group-hover:scale-[1.02] dark:invert-[.9] dark:brightness-90 dark:contrast-75"
                 role="img"
               />
-            </a>
-            <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-purple-100/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-purple-800 shadow-sm ring-1 ring-purple-200/70 dark:bg-purple-900/50 dark:text-purple-100 dark:ring-purple-800/60">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
-              Great Hall
-            </span>
+            </Link>
+            {/* Primary navigation (desktop) */}
+            <nav className="hidden md:flex items-center gap-1">
+              <Link to="/" className={navLinkClass('/')}>Home</Link>
+              <Link to="/greathall" className={navLinkClass('/greathall')}>Great Hall</Link>
+              <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
+              <Link to="/chat" className={navLinkClass('/chat')}>Chat</Link>
+            </nav>
           </div>
 
           {/* Search + Theme */}
@@ -143,90 +339,67 @@ export function Header({
                 </button>
               )}
             </div>
-
-            {/* Theme toggle and Settings */}
-            <div className={`flex items-center gap-2 transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-              <SettingsMenu />
-
-              {/* Quick background effects toggle */}
-              <button
-                onClick={() => setEnableBackgroundEffects(!enableBackgroundEffects)}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-gray-300/70 bg-white/85 text-sm font-medium shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900 ${enableBackgroundEffects ? 'ring-1 ring-purple-400/60 dark:ring-purple-300/40' : ''}`}
-                title="Toggle magical background"
-                aria-label="Toggle magical background effects"
-                aria-pressed={enableBackgroundEffects}
-              >
-                <svg
-                  className={`h-5 w-5 ${enableBackgroundEffects ? 'text-purple-500' : 'text-white'}`}
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
+            <div className={`flex items-center transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+              <div className="relative" ref={actionsRef}>
+                <button
+                  onClick={() => setActionsOpen(!actionsOpen)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 h-9 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100 hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
+                  aria-haspopup="true"
+                  aria-expanded={actionsOpen}
                 >
-                  <path d="M12 2.2 14.7 8l5.8.8-4.3 4.1 1 6-5.2-3-5.2 3 1-6L3.5 8.8 9.3 8l2.7-5.8Z" />
-                </svg>
-              </button>
-
-              <button
-                onClick={toggleTheme}
-                className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
-                           hover:bg-white active:scale-95
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
-                title="Toggle theme"
-                aria-label="Toggle theme"
-              >
-                {/* moon/sun as vectors for crispness */}
-                <svg
-                  className="dark:hidden h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  {/* moon */}
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-                <svg
-                  className="hidden dark:block h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  {/* sun */}
-                  <path d="M6.76 4.84 5.34 3.42 3.92 4.84l1.42 1.42 1.42-1.42zm10.48 0 1.42-1.42 1.42 1.42-1.42 1.42-1.42-1.42zM12 2h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm9-6h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm1.76 7.16-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM20.66 18.58l-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z" />
-                </svg>
-              </button>
-
-              {/* Auth buttons */}
-              {isAuthenticated ? (
-                <UserMenu />
-              ) : (
-                <Button
-                  onClick={() => setAuthModalOpen(true)}
-                  variant="outline"
-                  className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
-                           hover:bg-white active:scale-95
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
-                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
-                  size="sm"
-                >
-                  <svg
-                    className="h-5 w-5 text-gray-700 dark:text-gray-100"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    {/* profile */}
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
-                </Button>
-              )}
+                  <span className="hidden md:inline">Menu</span>
+                  <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                {actionsOpen && renderMenuContent(() => setActionsOpen(false))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Mobile Header - Full width, flat */}
+      <div className="sm:hidden relative w-full px-4 py-2 bg-white/80 dark:bg-gray-900/90 border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="flex-1 rounded-full border border-gray-300/50 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+            aria-label="Search for wizards"
+          />
+          <div className="relative" ref={mobileActionsRef}>
+            <button
+              onClick={() => setMobileActionsOpen(!mobileActionsOpen)}
+              className="inline-flex items-center justify-center h-10 w-10 rounded-full border border-gray-300/60 bg-white/90 text-gray-800 shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
+              aria-haspopup="true"
+              aria-expanded={mobileActionsOpen}
+              aria-label="Open menu"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            {mobileActionsOpen && renderMenuContent(() => setMobileActionsOpen(false), "right-0")}
+          </div>
+        </div>
+        {/* Primary navigation (mobile) */}
+        <nav className="mt-2 -mx-1 flex items-center gap-1 overflow-x-auto no-scrollbar">
+          <Link to="/" className={navLinkClass('/')}>Home</Link>
+          <Link to="/greathall" className={navLinkClass('/greathall')}>Great Hall</Link>
+          <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
+          <Link to="/chat" className={navLinkClass('/chat')}>Chat</Link>
+        </nav>
+      </div>
+
       {/* Auth Modal */}
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      {/* Settings panel removed: settings are inline in dropdown */}
     </header>
   );
 }

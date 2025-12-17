@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -13,6 +13,11 @@ export function UserDetailPage() {
   const { people } = useAppData();
   const { enableAnimations } = useSettings();
   const [activeTab, setActiveTab] = useState<'about' | 'skills' | 'magical'>('about');
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   // Find the person by ID
   const person = people.find((p) => p.id === id);
@@ -118,12 +123,12 @@ export function UserDetailPage() {
                     {person.name}
                   </h1>
                   <div className="flex flex-wrap gap-2 items-center">
-                  <span className={cn('text-lg font-bold', getHouseClasses(person.house).chip)}>
-                    {person.house.charAt(0).toUpperCase() + person.house.slice(1)} House 🏰
-                  </span>
+                    <span className={cn('text-lg font-bold', getHouseClasses(person.house).chip)}>
+                      {person.house.charAt(0).toUpperCase() + person.house.slice(1)} House
+                    </span>
                     {person.isSpecial && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-sm font-semibold">
-                        <span>✨</span>
+                        <span>★</span>
                         {person.specialType === 'hero' && 'Hero'}
                         {person.specialType === 'villain' && 'Villain'}
                         {person.specialType === 'magical-being' && 'Magical Being'}
@@ -135,7 +140,7 @@ export function UserDetailPage() {
                 {/* Quick stats */}
                 <div className="flex flex-wrap gap-4 pt-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">🩸</span>
+                    <span className="text-2xl">◆</span>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Blood Status</p>
                       <p className="font-semibold text-gray-900 dark:text-white">{person.bloodGroup}</p>
@@ -143,7 +148,7 @@ export function UserDetailPage() {
                   </div>
                   {person.yearsAtHogwarts && (
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">📚</span>
+                      <span className="text-2xl">∿</span>
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Years</p>
                         <p className="font-semibold text-gray-900 dark:text-white">{person.yearsAtHogwarts}</p>
@@ -161,7 +166,7 @@ export function UserDetailPage() {
                       onClick={(e) => handleContactClick(e, `https://wa.me/${person.phone.replace(/[\s-]/g, '')}`)}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition-all duration-200"
                     >
-                      <span>💬</span>
+                      <span>💭</span>
                       Message
                     </motion.button>
                   )}
@@ -220,11 +225,20 @@ export function UserDetailPage() {
               >
                 <div className="px-6 sm:px-8 py-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                    <span>ℹ️</span>
+                    <span>ℹ</span>
                     About
                   </h2>
 
                   <div className="space-y-6">
+                    {/* Bio on top */}
+                    <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-3">Biography</p>
+                      <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                        Member of {person.house.charAt(0).toUpperCase() + person.house.slice(1)} House, distinguished {person.roll.toLowerCase()} at MechoWarts School of
+                        Witchcraft & Wizardry. {person.isSpecial && `Known as a ${person.specialType}.`}
+                      </p>
+                    </div>
+
                     {person.hometown && (
                       <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-2">📍 Hometown</p>
@@ -234,7 +248,7 @@ export function UserDetailPage() {
 
                     {person.phone && (
                       <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-2">📞 Contact</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-2">☎ Contact</p>
                         <a
                           href={`tel:${person.phone}`}
                           className="text-lg text-blue-600 dark:text-blue-400 hover:underline font-medium"
@@ -253,13 +267,12 @@ export function UserDetailPage() {
                       </div>
                     )}
 
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-3">Bio</p>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Member of {person.house} House, distinguished {person.roll.toLowerCase()} at MechoWarts School of
-                        Witchcraft & Wizardry. {person.isSpecial && `Known as a ${person.specialType}.`}
-                      </p>
-                    </div>
+                    {person.bloodGroup && (
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-2">🩸 Blood Status</p>
+                        <p className="text-lg text-gray-900 dark:text-white font-medium">{person.bloodGroup}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -310,7 +323,7 @@ export function UserDetailPage() {
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/50 dark:border-blue-800/30 overflow-hidden">
                     <div className="px-6 sm:px-8 py-6">
                       <h3 className="text-xl font-bold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
-                        <span className="text-3xl">🦌</span>
+                        <span className="text-3xl">◈</span>
                         Patronus
                       </h3>
                       <p className="text-lg text-gray-800 dark:text-gray-200 font-semibold">{person.patronus}</p>
@@ -325,7 +338,7 @@ export function UserDetailPage() {
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 backdrop-blur-sm rounded-xl shadow-lg border border-purple-200/50 dark:border-purple-800/30 overflow-hidden">
                     <div className="px-6 sm:px-8 py-6">
                       <h3 className="text-xl font-bold text-purple-900 dark:text-purple-300 mb-3 flex items-center gap-2">
-                        <span className="text-3xl">🪄</span>
+                        <span className="text-3xl">↯</span>
                         Wand
                       </h3>
                       <p className="text-lg text-gray-800 dark:text-gray-200 font-semibold">{person.wand}</p>
@@ -376,7 +389,7 @@ export function UserDetailPage() {
             <div className="bg-white/90 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <span>🔗</span>
+                  <span>⊕</span>
                   Connect
                 </h3>
               </div>
@@ -387,7 +400,7 @@ export function UserDetailPage() {
                     onClick={(e) => handleContactClick(e, `https://wa.me/${person.phone.replace(/[\s-]/g, '')}`)}
                     className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    <span>💬</span>
+                    <span>💭</span>
                     WhatsApp
                   </motion.button>
                 )}

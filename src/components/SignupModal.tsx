@@ -6,27 +6,40 @@ import { Input } from '@/components/ui/Input';
 
 export function SignupModal({ onSuccess }: { onSuccess?: () => void }) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const { signup, isLoading, error, clearError } = useAuth();
-  const { errors, validateEmail, validatePassword, validateName, clearErrors } =
-    useAuthValidation();
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const { sendMagicLink, isLoading, error, clearError } = useAuth();
+  const { errors, validateEmail, clearErrors } = useAuthValidation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearErrors();
 
-    if (!validateEmail(email) || !validatePassword(password) || !validateName(name)) {
+    if (!validateEmail(email)) {
       return;
     }
 
-    try {
-      await signup(email, password, name);
+    const success = await sendMagicLink(email);
+    if (success) {
+      setMagicLinkSent(true);
       onSuccess?.();
-    } catch {
-      // Error is handled by useAuth context
     }
   };
+
+  if (magicLinkSent) {
+    return (
+      <div className="w-full max-w-md mx-auto text-center">
+        <div className="p-6 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
+          <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+            Magic Link Sent! ✨
+          </h2>
+          <p className="text-green-700 dark:text-green-300">
+            Check your email ({email}) for a login link to complete your registration.
+            The link will expire in 1 hour.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -48,22 +61,7 @@ export function SignupModal({ onSuccess }: { onSuccess?: () => void }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Name
-          </label>
-          <Input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={isLoading}
-            className={errors.name ? 'border-red-500' : ''}
-          />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Email
+            RUET Email
           </label>
           <Input
             type="email"
@@ -74,25 +72,13 @@ export function SignupModal({ onSuccess }: { onSuccess?: () => void }) {
             className={errors.email ? 'border-red-500' : ''}
           />
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Password
-          </label>
-          <Input
-            type="password"
-            placeholder="••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            className={errors.password ? 'border-red-500' : ''}
-          />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Use your RUET student email to sign up. We'll send you a magic link!
+          </p>
         </div>
 
         <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? 'Creating account...' : 'Sign Up'}
+          {isLoading ? 'Sending...' : 'Send Magic Link'}
         </Button>
       </form>
     </div>

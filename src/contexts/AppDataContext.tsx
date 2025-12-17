@@ -22,12 +22,20 @@ export function useAppData() {
 
 interface AppDataProviderProps {
   children: React.ReactNode;
-  value: AppContextType;
+  value?: AppContextType;
 }
+
+const defaultContext: AppContextType = {
+  people: [],
+  isLoading: false,
+  apiError: null,
+  refetch: () => { },
+  pushToast: () => { },
+};
 
 export function AppDataProvider({ children, value }: AppDataProviderProps) {
   return (
-    <AppDataContext.Provider value={value}>
+    <AppDataContext.Provider value={value ?? defaultContext}>
       {children}
     </AppDataContext.Provider>
   );

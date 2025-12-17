@@ -2,8 +2,8 @@ import React from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-b from-white/50 to-white/30 dark:from-gray-900/70 dark:to-gray-900/50 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 mt-16 py-12 md:py-16">
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+    <footer className="w-full bg-gradient-to-b from-white/50 to-white/30 dark:from-gray-900/70 dark:to-gray-900/50 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 mt-12 py-8 md:py-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         <div className="text-center space-y-8">
           {/* Header with emoji */}
           <div className="space-y-3">
@@ -63,7 +63,7 @@ export const Footer: React.FC = () => {
               <span className="text-lg">✨</span>
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Magic</span>
             </div>
-            
+
             {/* Quote */}
             <div className="pt-2">
               <p className="text-sm italic text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">

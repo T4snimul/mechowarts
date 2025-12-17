@@ -1,156 +1,164 @@
-// API configuration
-// @ts-ignore
-export const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:5000/api';
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import type { Person, PeopleApiResponse, PersonApiResponse, AuthUser } from '@/types';
 
-// API endpoints
-export const ENDPOINTS = {
-  AUTH: {
-    SIGNUP: `${API_BASE_URL}/auth/signup`,
-    LOGIN: `${API_BASE_URL}/auth/login`,
-    ME: `${API_BASE_URL}/auth/me`
-  },
-  PEOPLE: {
-    LIST: `${API_BASE_URL}/people`,
-    GET: (roll: string) => `${API_BASE_URL}/people/${roll}`,
-    CREATE: `${API_BASE_URL}/people`,
-    UPDATE: (roll: string) => `${API_BASE_URL}/people/${roll}`
-  }
-};
+// ============================================
+// Configuration
+// ============================================
 
-// Get stored auth token
-export function getAuthToken(): string | null {
-  return localStorage.getItem('authToken');
-}
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Store auth token
-export function setAuthToken(token: string): void {
-  localStorage.setItem('authToken', token);
-}
+// ============================================
+// Axios Instance
+// ============================================
 
-// Clear auth token
-export function clearAuthToken(): void {
-  localStorage.removeItem('authToken');
-}
-
-// Get authorization headers
-export function getAuthHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  return {
+export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: false,
+  headers: {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` })
-  };
+  },
+  timeout: 10000, // 10 second timeout
+});
+
+// ============================================
+// Token Management
+// ============================================
+
+let authToken: string | null = null;
+
+/**
+ * Set or clear the authorization token
+ */
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common.Authorization;
+  }
 }
 
-// Fetch with auth
-export async function authenticatedFetch(
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers
-    }
-  });
+/**
+ * Get current auth token
+ */
+export function getAuthToken(): string | null {
+  return authToken;
 }
 
-// Auth API calls
+// ============================================
+// Error Handling
+// ============================================
+
+/**
+ * Extract error message from API error
+ */
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<{ error?: string; message?: string }>;
+    return (
+      axiosError.response?.data?.error ||
+      axiosError.response?.data?.message ||
+      axiosError.message ||
+      'An unexpected error occurred'
+    );
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'An unexpected error occurred';
+}
+
+// ============================================
+// API Error Class
+// ============================================
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode?: number,
+    public originalError?: unknown
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+// ============================================
+// Auth API
+// ============================================
+
 export const authApi = {
-  async signup(email: string, password: string, name?: string) {
-    const response = await fetch(ENDPOINTS.AUTH.SIGNUP, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Signup failed');
+  /**
+   * Get current authenticated user
+   */
+  async getMe(): Promise<{ user: AuthUser }> {
+    try {
+      const response = await api.get<{ user: AuthUser }>('/auth/me');
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
-
-    return response.json();
   },
-
-  async login(email: string, password: string) {
-    const response = await fetch(ENDPOINTS.AUTH.LOGIN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Login failed');
-    }
-
-    return response.json();
-  },
-
-  async getMe() {
-    const response = await authenticatedFetch(ENDPOINTS.AUTH.ME);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user');
-    }
-
-    return response.json();
-  }
 };
 
-// People API calls
+// ============================================
+// People API
+// ============================================
+
+export interface GetPeopleParams {
+  house?: string;
+  status?: string;
+  sort?: 'name' | 'roll';
+}
+
 export const peopleApi = {
-  async getAll(filters?: { house?: string; status?: string; sort?: string }) {
-    const params = new URLSearchParams();
-    if (filters?.house) params.append('house', filters.house);
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.sort) params.append('sort', filters.sort);
-
-    const url = `${ENDPOINTS.PEOPLE.LIST}${params.size ? `?${params.toString()}` : ''}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch people');
+  /**
+   * Get all people with optional filters
+   */
+  async getAll(params?: GetPeopleParams): Promise<PeopleApiResponse> {
+    try {
+      const response = await api.get<PeopleApiResponse>('/people', { params });
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
-
-    return response.json();
   },
 
-  async getByRoll(roll: string) {
-    const response = await fetch(ENDPOINTS.PEOPLE.GET(roll));
-
-    if (!response.ok) {
-      throw new Error('Person not found');
+  /**
+   * Get a single person by roll number
+   */
+  async getByRoll(roll: string): Promise<PersonApiResponse> {
+    try {
+      const response = await api.get<PersonApiResponse>(`/people/${roll}`);
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
-
-    return response.json();
   },
 
-  async create(data: unknown) {
-    const response = await authenticatedFetch(ENDPOINTS.PEOPLE.CREATE, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create person');
+  /**
+   * Update the current user's profile
+   */
+  async updateMyProfile(data: Partial<Person>): Promise<PersonApiResponse> {
+    try {
+      const response = await api.put<PersonApiResponse>('/people/me', data);
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
-
-    return response.json();
   },
 
-  async update(roll: string, data: unknown) {
-    const response = await authenticatedFetch(ENDPOINTS.PEOPLE.UPDATE(roll), {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to update person');
+  /**
+   * Update a person by roll (admin only)
+   */
+  async updateByRoll(roll: string, data: Partial<Person>): Promise<PersonApiResponse> {
+    try {
+      const response = await api.put<PersonApiResponse>(`/people/${roll}`, data);
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
-
-    return response.json();
-  }
+  },
 };
+
+export default api;

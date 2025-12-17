@@ -3,7 +3,6 @@ import { ProfileCard } from './ProfileCard';
 import type { GridProps } from '@/types';
 import { cn } from '@/utils';
 import { MagicalLoading } from './ui/LoadingSpinner';
-import { useSettings } from '@/contexts/SettingsContext';
 
 interface EmptyStateProps {
   query?: string;
@@ -68,20 +67,9 @@ interface GridLayoutProps {
 }
 
 function GridLayout({ children, className }: GridLayoutProps) {
-  const { cardSize } = useSettings();
-
-  // Get grid classes based on card size
+  // Get grid classes - hardcoded to large for consistent layout
   const getGridClasses = () => {
-    const baseClasses = 'grid gap-3 max-w-5xl mx-auto place-items-center';
-
-    switch (cardSize) {
-      case 'small':
-        return `${baseClasses} grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6`;
-      case 'large':
-        return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3`;
-      default: // medium
-        return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`;
-    }
+    return 'grid gap-4 max-w-7xl mx-auto place-items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4';
   };
 
   return (
@@ -108,8 +96,6 @@ function LoadingGrid() {
 }
 
 export function ProfileGrid({ people, query, className, isLoading = false, onResetFilters, onOpenPerson }: ProfileGridProps) {
-  const { cardSize } = useSettings();
-
   if (isLoading) {
     return <LoadingGrid />;
   }
@@ -118,24 +104,13 @@ export function ProfileGrid({ people, query, className, isLoading = false, onRes
     return <EmptyState query={query} onResetFilters={onResetFilters} />;
   }
 
-  // Get container classes based on card size
-  const getCardContainerClasses = () => {
-    const baseClasses = 'w-full';
-
-    switch (cardSize) {
-      case 'small':
-        return `${baseClasses} max-w-xs`;
-      case 'large':
-        return `${baseClasses} max-w-sm`;
-      default: // medium
-        return `${baseClasses} max-w-xs`;
-    }
-  };
+  // Fixed container size for consistent layout
+  const containerClass = 'w-full max-w-sm';
 
   return (
     <GridLayout className={className}>
       {people.map((person, index) => (
-        <div key={person.id} className={getCardContainerClasses()}>
+        <div key={person.id} className={containerClass}>
           <ProfileCard person={person} index={index} onOpenPerson={onOpenPerson} />
         </div>
       ))}

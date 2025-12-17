@@ -2,8 +2,20 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '@/contexts/SettingsContext';
 
-export function SettingsMenu() {
-  const [isOpen, setIsOpen] = useState(false);
+interface SettingsMenuProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
+}
+
+export function SettingsMenu({
+  isOpen,
+  onOpenChange,
+  hideTrigger = false,
+}: SettingsMenuProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = typeof isOpen === 'boolean' ? isOpen : internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const {
     enableAnimations,
     setEnableAnimations,
@@ -11,8 +23,6 @@ export function SettingsMenu() {
     setEnableBackgroundEffects,
     reducedMotion,
     setReducedMotion,
-    cardSize,
-    setCardSize,
     highContrast,
     setHighContrast,
   } = useSettings();
@@ -20,27 +30,29 @@ export function SettingsMenu() {
   return (
     <div className="relative">
       {/* Settings Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-colors backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
-        aria-label="Open settings"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      </button>
+      {!hideTrigger && (
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 rounded-lg bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-colors backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
+          aria-label="Open settings"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      )}
 
       {/* Settings Panel */}
       <AnimatePresence>
-        {isOpen && (
+        {open && (
           <>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={() => setOpen(false)}
               className="fixed inset-0 z-40 bg-black/20"
             />
 
@@ -55,7 +67,7 @@ export function SettingsMenu() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h3>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => setOpen(false)}
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   aria-label="Close settings"
                 >
@@ -102,23 +114,6 @@ export function SettingsMenu() {
                   </div>
                 </div>
 
-                {/* Layout */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Layout</h4>
-                  <div>
-                    <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Card size</label>
-                    <select
-                      value={cardSize}
-                      onChange={(e) => setCardSize(e.target.value as 'small' | 'medium' | 'large')}
-                      className="w-full px-4 py-2.5 text-sm bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:border-purple-500 transition-all duration-200 cursor-pointer hover:border-purple-400 dark:hover:border-purple-400 text-gray-900 dark:text-gray-100"
-                    >
-                      <option value="small">Small</option>
-                      <option value="medium">Medium</option>
-                      <option value="large">Large</option>
-                    </select>
-                  </div>
-                </div>
-
                 {/* Accessibility */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Accessibility</h4>
@@ -140,7 +135,6 @@ export function SettingsMenu() {
                       setEnableAnimations(true);
                       setEnableBackgroundEffects(true);
                       setReducedMotion(false);
-                      setCardSize('medium');
                       setHighContrast(false);
                     }}
                     className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

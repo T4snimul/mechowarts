@@ -231,9 +231,6 @@ export function animateCount(
 // Validation Utilities
 // ============================================
 
-/** RUET email pattern */
-export const RUET_EMAIL_REGEX = /^(24080\d{2})@student\.ruet\.ac\.bd$/i;
-
 /**
  * Check if we're in development mode
  */
@@ -242,24 +239,16 @@ export function isDevelopment(): boolean {
 }
 
 /**
- * Validate RUET email format
- * In development mode, any valid email is allowed
- * In production, only RUET emails are allowed
+ * Validate email format (accepts any valid email)
  */
-export function isValidRuetEmail(email: string): boolean {
-  // In development, allow any valid email format
-  if (isDevelopment()) {
-    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return basicEmailRegex.test(email);
-  }
-  // In production, enforce RUET email restriction
-  return RUET_EMAIL_REGEX.test(email);
+export function isValidRuetEmail(_email: string): boolean {
+  const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return basicEmailRegex.test(_email);
 }
 
 /**
- * Extract roll number from RUET email
+ * Extract roll number from email (legacy, returns null for non-RUET emails)
  */
-export function extractRollFromEmail(email: string): string | null {
-  const match = email.match(RUET_EMAIL_REGEX);
-  return match ? match[1] : null;
+export function extractRollFromEmail(_email: string): string | null {
+  return null;
 }

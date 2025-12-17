@@ -12,8 +12,7 @@ import { FloatingControls } from '@/components/ui/FloatingControls';
 
 // Lazy load pages for better performance
 const LandingPage = lazy(() => import('@/pages/LandingPage').then(module => ({ default: module.LandingPage })));
-const LoginPage = lazy(() => import('@/pages/LoginPage').then(module => ({ default: module.LoginPage })));
-const SignupPage = lazy(() => import('@/pages/SignupPage').then(module => ({ default: module.SignupPage })));
+const AuthPage = lazy(() => import('@/pages/AuthPage').then(module => ({ default: module.AuthPage })));
 const GreatHallPage = lazy(() => import('@/pages/GreatHallPage').then(module => ({ default: module.GreatHallPage })));
 const EnhancedUserDetailPage = lazy(() => import('@/pages/EnhancedUserDetailPage').then(module => ({ default: module.EnhancedUserDetailPage })));
 const OwleryPage = lazy(() => import('@/pages/OwleryPage').then(module => ({ default: module.OwleryPage })));
@@ -50,9 +49,10 @@ function AppContent() {
           {/* Landing Page */}
           <Route path="/" element={<LandingPage />} />
 
-          {/* Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          {/* Auth Routes - now unified */}
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/signup" element={<AuthPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth-success" element={<AuthSuccessPage />} />
           <Route path="/login-failed" element={<AuthFailedPage />} />
 

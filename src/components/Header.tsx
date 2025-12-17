@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { AuthModal } from '@/components/AuthModal';
+import { UnifiedAuthModal } from '@/components/UnifiedAuthModal';
 import { Button } from '@/components/ui/Button';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
@@ -114,7 +114,15 @@ export function Header({
       {/* Quick Links Section */}
       <div className="px-2 py-2 border-b border-gray-200/70 dark:border-gray-700/50">
         <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Quick Access</p>
-        <div className="grid grid-cols-3 gap-1 mt-1">
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          <Link
+            to="/dashboard"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">📊</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Dashboard</span>
+          </Link>
           <Link
             to="/greathall"
             onClick={() => closeMenu()}
@@ -173,8 +181,8 @@ export function Header({
           <button
             onClick={() => setEnableAnimations(!enableAnimations)}
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${enableAnimations
-                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
-                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+              : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
               }`}
           >
             ✨ Animations
@@ -182,8 +190,8 @@ export function Header({
           <button
             onClick={() => setEnableBackgroundEffects(!enableBackgroundEffects)}
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${enableBackgroundEffects
-                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
-                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+              : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
               }`}
           >
             🌌 Effects
@@ -193,8 +201,8 @@ export function Header({
           <button
             onClick={() => setReducedMotion(!reducedMotion)}
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${reducedMotion
-                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
-                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+              : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
               }`}
           >
             🐢 Reduced
@@ -202,8 +210,8 @@ export function Header({
           <button
             onClick={() => setHighContrast(!highContrast)}
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${highContrast
-                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
-                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+              : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
               }`}
           >
             🔲 Contrast
@@ -453,7 +461,7 @@ export function Header({
       </div>
 
       {/* Auth Modal */}
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <UnifiedAuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} mode="signin" />
       {/* Settings panel removed: settings are inline in dropdown */}
     </header>
   );

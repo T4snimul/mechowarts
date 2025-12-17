@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isValidRuetEmail, isDevelopment } from '@/utils';
+import { isValidRuetEmail } from '@/utils';
 import { BackButton } from '@/components/ui/BackButton';
 
 export function SignupPage() {
@@ -20,11 +20,7 @@ export function SignupPage() {
     const trimmedEmail = email.trim().toLowerCase();
     if (!isValidRuetEmail(trimmedEmail)) {
       setStatus('error');
-      setStatusMessage(
-        isDevelopment()
-          ? 'Please enter a valid email address'
-          : 'Please use a valid RUET email (24080XX@student.ruet.ac.bd)'
-      );
+      setStatusMessage('Please enter a valid email address');
       return;
     }
 
@@ -108,7 +104,7 @@ export function SignupPage() {
               <input
                 type="email"
                 required
-                placeholder={isDevelopment() ? 'any@email.com' : '24080XX@student.ruet.ac.bd'}
+                placeholder='your.email@example.com'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={status === 'sending'}
@@ -210,9 +206,6 @@ export function SignupPage() {
 
           {/* Info text */}
           <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-purple-200/60">
-              Only RUET students (24080XX@student.ruet.ac.bd) can access
-            </p>
             <p className="text-sm text-purple-200/80">
               Already have an account?{' '}
               <button

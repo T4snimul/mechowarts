@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,10 +59,14 @@ function QuickStat({ label, value, icon }: { label: string; value: string; icon:
 }
 
 export function DashboardPage() {
-  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, logout, updatePassword, error: authError } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [pwdMsg, setPwdMsg] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -215,10 +219,7 @@ export function DashboardPage() {
           <div className="space-y-3">
             {/* Change Password */}
             <button
-              onClick={() => {
-                // TODO: Implement password change modal/flow
-                alert('Password change feature coming soon! For now, use "Forgot Password" on the login page.');
-              }}
+              onClick={() => setShowChangePwd(v => !v)}
               className={`w-full flex items-center gap-3 p-4 rounded-xl transition-colors ${isDark
                 ? 'bg-gray-700/50 hover:bg-gray-700 text-gray-200'
                 : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
@@ -237,6 +238,48 @@ export function DashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+
+            {showChangePwd && (
+              <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.target.value)}
+                  className={`rounded-xl border px-4 py-3 ${isDark ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.target.value)}
+                  className={`rounded-xl border px-4 py-3 ${isDark ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+                <button
+                  onClick={async () => {
+                    setPwdMsg(null);
+                    if (!newPwd || newPwd.length < 6) {
+                      setPwdMsg('Password must be at least 6 characters');
+                      return;
+                    }
+                    if (newPwd !== confirmPwd) {
+                      setPwdMsg('Passwords do not match');
+                      return;
+                    }
+                    const ok = await updatePassword(newPwd);
+                    setPwdMsg(ok ? '✅ Password updated' : authError || 'Failed to update password');
+                    if (ok) { setNewPwd(''); setConfirmPwd(''); }
+                  }}
+                  disabled={authLoading}
+                  className={`sm:col-span-2 ${isDark ? 'bg-purple-700 hover:bg-purple-600 text-white' : 'bg-purple-600 hover:bg-purple-500 text-white'} font-semibold py-2 px-4 rounded-xl disabled:opacity-60`}
+                >
+                  Update Password
+                </button>
+                {pwdMsg && (
+                  <p className={`sm:col-span-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{pwdMsg}</p>
+                )}
+              </div>
+            )}
 
             {/* Logout */}
             <button

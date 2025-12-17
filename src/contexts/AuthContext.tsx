@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { authApi, setAuthToken } from '@/utils/api';
-import { isValidRuetEmail, isDevelopment } from '@/utils';
+import { isValidRuetEmail } from '@/utils';
 import type { AuthUser } from '@/types';
 
 // ============================================
@@ -24,6 +24,8 @@ interface AuthContextType {
   sendMagicLink: (email: string) => Promise<boolean>;
   signInWithPassword: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean>;
+  sendPasswordReset: (email: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
   clearError: () => void;
@@ -143,10 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     if (!isValidRuetEmail(email)) {
-      const errorMsg = isDevelopment()
-        ? 'Please enter a valid email address'
-        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
-      setError(errorMsg);
+      setError('Please enter a valid email address');
       return false;
     }
 
@@ -177,10 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     if (!isValidRuetEmail(email)) {
-      const errorMsg = isDevelopment()
-        ? 'Please enter a valid email address'
-        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
-      setError(errorMsg);
+      setError('Please enter a valid email address');
       return false;
     }
 
@@ -210,10 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     if (!isValidRuetEmail(email)) {
-      const errorMsg = isDevelopment()
-        ? 'Please enter a valid email address'
-        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
-      setError(errorMsg);
+      setError('Please enter a valid email address');
       return false;
     }
 
@@ -235,6 +228,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (signUpError) {
       console.error('[Auth] Sign up error:', signUpError.message);
       setError(signUpError.message);
+      setIsLoading(false);
+      return false;
+    }
+
+    setIsLoading(false);
+    return true;
+  }, []);
+
+  /**
+   * Update password for authenticated user
+   */
+  const updatePassword = useCallback(async (newPassword: string): Promise<boolean> => {
+    setError(null);
+
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+
+    setIsLoading(true);
+
+    const { error: updErr } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (updErr) {
+      console.error('[Auth] Update password error:', updErr.message);
+      setError(updErr.message);
+      setIsLoading(false);
+      return false;
+    }
+
+    setIsLoading(false);
+    return true;
+  }, []);
+
+  /**
+   * Send password reset/set email
+   */
+  const sendPasswordReset = useCallback(async (email: string): Promise<boolean> => {
+    setError(null);
+    const trimmed = email.trim().toLowerCase();
+
+    if (!isValidRuetEmail(trimmed)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    setIsLoading(true);
+
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+
+    if (resetErr) {
+      console.error('[Auth] Reset password error:', resetErr.message);
+      setError(resetErr.message);
       setIsLoading(false);
       return false;
     }
@@ -287,11 +335,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sendMagicLink,
       signInWithPassword,
       signUp,
+      updatePassword,
+      sendPasswordReset,
       logout,
       refetchUser,
       clearError,
     }),
-    [user, isLoading, error, sendMagicLink, signInWithPassword, signUp, logout, refetchUser, clearError]
+    [user, isLoading, error, sendMagicLink, signInWithPassword, signUp, updatePassword, sendPasswordReset, logout, refetchUser, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

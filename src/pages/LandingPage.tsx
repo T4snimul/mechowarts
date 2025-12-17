@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { MagicalBackground } from '@/components/ui/MagicalBackground';
+import { MechaWizard3D } from '@/components/ui/MechaWizard3D';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useMemo } from 'react';
 import { usePeopleFromAPI } from '@/hooks/usePeopleFromAPI';
@@ -70,42 +71,50 @@ export function LandingPage() {
 
       {/* Main content with padding for header */}
       <main className="flex-1 pt-20 pb-12">
-        {/* Hero Section */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="space-y-6 animate-fade-in">
-            {/* Title */}
-            <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 drop-shadow-lg">
-              Welcome to MechoWarts
-            </h1>
+        {/* Hero Section - Two Column */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <div className="space-y-6 animate-fade-in text-center lg:text-left">
+              {/* Title */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 drop-shadow-lg">
+                Welcome to MechoWarts
+              </h1>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 font-serif">
-              Where Mechatronics Engineering meets Magic
-            </p>
+              {/* Subtitle */}
+              <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 dark:text-gray-300 font-serif">
+                Where Mechatronics Engineering meets Magic
+              </p>
 
-            {/* Description */}
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Discover the profiles of RUET Mechatronics Engineering students, sorted into Hogwarts houses based on their unique qualities and achievements.
-            </p>
+              {/* Description */}
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0">
+                Discover the profiles of RUET Mechatronics Engineering students, sorted into Hogwarts houses based on their unique qualities and achievements.
+              </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center pt-8">
-              <button
-                onClick={() => navigate('/greathall')}
-                className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
-              >
-                <span className="relative z-10">🏰 Enter Great Hall</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </button>
-
-              {!isAuthenticated && (
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-4 lg:pt-8">
                 <button
-                  onClick={() => navigate('/login')}
-                  className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-indigo-600"
+                  onClick={() => navigate('/greathall')}
+                  className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
                 >
-                  ✨ Sign In
+                  <span className="relative z-10">🏰 Enter Great Hall</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </button>
-              )}
+
+                {!isAuthenticated && (
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-indigo-600"
+                  >
+                    ✨ Sign In
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column - 3D Model */}
+            <div className="hidden lg:flex justify-center items-center h-[400px] xl:h-[500px]">
+              <MechaWizard3D />
             </div>
           </div>
         </div>

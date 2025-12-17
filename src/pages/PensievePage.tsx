@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { Modal, ModalBody } from '@/components/ui/Modal';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface Memory {
   id: string;
@@ -150,8 +152,8 @@ export function PensievePage() {
                   <button
                     onClick={() => setFilter('all')}
                     className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === 'all'
-                        ? 'bg-purple-600 text-white'
-                        : 'text-gray-400 hover:text-white'
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-400 hover:text-white'
                       }`}
                   >
                     All
@@ -159,8 +161,8 @@ export function PensievePage() {
                   <button
                     onClick={() => setFilter('mine')}
                     className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === 'mine'
-                        ? 'bg-purple-600 text-white'
-                        : 'text-gray-400 hover:text-white'
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-400 hover:text-white'
                       }`}
                   >
                     My Memories
@@ -253,8 +255,8 @@ export function PensievePage() {
                         toggleLike(memory.id);
                       }}
                       className={`flex items-center gap-1 px-2 py-1 rounded-full transition-colors ${user?.id && memory.likes.includes(user.id)
-                          ? 'bg-red-500/20 text-red-400'
-                          : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
                         }`}
                     >
                       <svg className="w-4 h-4" fill={user?.id && memory.likes.includes(user.id) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
@@ -323,125 +325,111 @@ function UploadMemoryModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-700">
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              🫧 Add a Memory
-            </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-gray-400"
-            >
-              ✕
-            </button>
+    <Modal isOpen={true} onClose={onClose} title="🫧 Add a Memory" size="md">
+      <ModalBody>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Image URL */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Image URL <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setPreviewError(false);
+              }}
+              placeholder="https://example.com/your-image.jpg"
+              className="w-full px-4 py-2.5 bg-gray-900 dark:bg-stone-800 border border-gray-600 dark:border-stone-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Tip: Use image hosting services like Imgur, Imgbb, or direct social media image links
+            </p>
           </div>
 
-          <div className="space-y-4">
-            {/* Image URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Image URL <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => {
-                  setImageUrl(e.target.value);
-                  setPreviewError(false);
-                }}
-                placeholder="https://example.com/your-image.jpg"
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Tip: Use image hosting services like Imgur, Imgbb, or direct social media image links
-              </p>
+          {/* Image Preview */}
+          {imageUrl && (
+            <div className="rounded-xl overflow-hidden bg-gray-900 dark:bg-stone-800 border border-gray-700 dark:border-stone-700">
+              {previewError ? (
+                <div className="h-48 flex items-center justify-center text-gray-500">
+                  <p>Unable to load image preview</p>
+                </div>
+              ) : (
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="w-full h-48 object-cover"
+                  onError={() => setPreviewError(true)}
+                />
+              )}
             </div>
+          )}
 
-            {/* Image Preview */}
-            {imageUrl && (
-              <div className="rounded-xl overflow-hidden bg-gray-900 border border-gray-700">
-                {previewError ? (
-                  <div className="h-48 flex items-center justify-center text-gray-500">
-                    <p>Unable to load image preview</p>
-                  </div>
-                ) : (
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-48 object-cover"
-                    onError={() => setPreviewError(true)}
-                  />
-                )}
-              </div>
-            )}
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Title <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Give your memory a title"
+              className="w-full px-4 py-2.5 bg-gray-900 dark:bg-stone-800 border border-gray-600 dark:border-stone-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+              required
+            />
+          </div>
 
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Title <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Give your memory a title"
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
-                required
-              />
-            </div>
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Description <span className="text-gray-500">(optional)</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What's the story behind this memory?"
+              rows={3}
+              className="w-full px-4 py-2.5 bg-gray-900 dark:bg-stone-800 border border-gray-600 dark:border-stone-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500 resize-none"
+            />
+          </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Description <span className="text-gray-500">(optional)</span>
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="What's the story behind this memory?"
-                rows={3}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500 resize-none"
-              />
-            </div>
-
-            {/* Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Date of Memory
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white"
-              />
-            </div>
+          {/* Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Date of Memory
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-2.5 bg-gray-900 dark:bg-stone-800 border border-gray-600 dark:border-stone-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white"
+            />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-6">
-            <button
+          <div className="flex gap-3 pt-4">
+            <Button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-700 transition-colors"
+              variant="ghost"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={!imageUrl.trim() || !title.trim()}
-              className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-purple-600 hover:bg-purple-700"
             >
               Add Memory
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </ModalBody>
+    </Modal>
   );
 }
 
@@ -461,10 +449,18 @@ function MemoryDetailModal({
   currentUserId?: string;
   isOwner: boolean;
 }) {
+  // Prevent background scroll
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-700 flex flex-col md:flex-row"
+        className="bg-gray-900 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-700 flex flex-col md:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image */}
@@ -518,8 +514,8 @@ function MemoryDetailModal({
             <button
               onClick={() => onLike(memory.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${currentUserId && memory.likes.includes(currentUserId)
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-red-500/20 text-red-400'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
             >
               <svg className="w-5 h-5" fill={currentUserId && memory.likes.includes(currentUserId) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">

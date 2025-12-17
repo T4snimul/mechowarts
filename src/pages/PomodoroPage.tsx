@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Modal, ModalBody } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { BackButton } from '@/components/ui/BackButton';
 
 type TimerMode = 'work' | 'shortBreak' | 'longBreak';
 
@@ -233,15 +236,7 @@ export function PomodoroPage() {
     <div className={`min-h-screen bg-gradient-to-br ${MODE_BG[mode]} transition-colors duration-500`}>
       {/* Simple header */}
       <header className="p-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-white/80 hover:text-white flex items-center gap-2 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back
-        </button>
+        <BackButton to="/greathall" label="Back" variant="light" />
         <h1 className="text-white font-bold text-lg">MechoWarts Pomodoro</h1>
         <button
           onClick={() => setShowSettings(true)}
@@ -434,109 +429,101 @@ function SettingsModal({
   const [localSettings, setLocalSettings] = useState(settings);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Timer Settings
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-500"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* Time settings */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Time (minutes)
-              </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Pomodoro</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={60}
-                    value={localSettings.work}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, work: parseInt(e.target.value) || 25 }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Short Break</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={localSettings.shortBreak}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, shortBreak: parseInt(e.target.value) || 5 }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Long Break</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={60}
-                    value={localSettings.longBreak}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, longBreak: parseInt(e.target.value) || 15 }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
-                  />
-                </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Timer Settings"
+      size="md"
+    >
+      <ModalBody>
+        <div className="space-y-6">
+          {/* Time settings */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Time (minutes)
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Pomodoro</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={localSettings.work}
+                  onChange={(e) => setLocalSettings(s => ({ ...s, work: parseInt(e.target.value) || 25 }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
+                />
               </div>
-            </div>
-
-            {/* Auto start settings */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Auto Start
-              </h3>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={localSettings.autoStartBreaks}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, autoStartBreaks: e.target.checked }))}
-                    className="w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">Auto start breaks</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={localSettings.autoStartPomodoros}
-                    onChange={(e) => setLocalSettings(s => ({ ...s, autoStartPomodoros: e.target.checked }))}
-                    className="w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">Auto start pomodoros</span>
-                </label>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Short Break</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={localSettings.shortBreak}
+                  onChange={(e) => setLocalSettings(s => ({ ...s, shortBreak: parseInt(e.target.value) || 5 }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Long Break</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={localSettings.longBreak}
+                  onChange={(e) => setLocalSettings(s => ({ ...s, longBreak: parseInt(e.target.value) || 15 }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center"
+                />
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 mt-8">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => onSave(localSettings)}
-              className="flex-1 px-4 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium"
-            >
-              Save
-            </button>
+          {/* Auto start settings */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Auto Start
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={localSettings.autoStartBreaks}
+                  onChange={(e) => setLocalSettings(s => ({ ...s, autoStartBreaks: e.target.checked }))}
+                  className="w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500"
+                />
+                <span className="text-gray-700 dark:text-gray-300">Auto start breaks</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={localSettings.autoStartPomodoros}
+                  onChange={(e) => setLocalSettings(s => ({ ...s, autoStartPomodoros: e.target.checked }))}
+                  className="w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500"
+                />
+                <span className="text-gray-700 dark:text-gray-300">Auto start pomodoros</span>
+              </label>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 mt-8">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => onSave(localSettings)}
+            className="flex-1"
+          >
+            Save
+          </Button>
+        </div>
+      </ModalBody>
+    </Modal>
   );
 }

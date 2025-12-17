@@ -32,7 +32,8 @@ export function usePeopleFilter(
   query: string,
   sortBy: SortBy,
   houseFilter?: string,
-  bloodGroupFilter?: string
+  bloodGroupFilter?: string,
+  seriesFilter?: string
 ): Person[] {
   return useMemo(() => {
     // Defensive programming: ensure we have valid data
@@ -78,6 +79,16 @@ export function usePeopleFilter(
       );
     }
 
+    // Apply series filter (extract first 2 digits of roll number)
+    // Roll number format: YYZZXXX where YY = series (e.g., 24 for 2024-2025)
+    if (seriesFilter) {
+      filteredPeople = filteredPeople.filter((person) => {
+        if (!person?.roll) return false;
+        const series = person.roll.substring(0, 2);
+        return series === seriesFilter;
+      });
+    }
+
     // Sort the filtered results
     filteredPeople.sort((a, b) => {
       const aValue = a[sortBy] ?? '';
@@ -93,7 +104,7 @@ export function usePeopleFilter(
     });
 
     return filteredPeople;
-  }, [people, query, sortBy, houseFilter, bloodGroupFilter]);
+  }, [people, query, sortBy, houseFilter, bloodGroupFilter, seriesFilter]);
 }
 
 // ============================================

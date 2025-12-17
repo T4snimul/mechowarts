@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { GreatHall } from '@/components/GreatHall';
@@ -11,23 +11,48 @@ import { usePeopleFilter } from '@/hooks/usePeopleFilter';
 import { usePagination } from '@/hooks';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAppData } from '@/contexts/AppDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import type { SortBy, Person } from '@/types';
 
 export function GreatHallPage() {
   const { people, isLoading } = useAppData();
+  const { isAuthenticated } = useAuth();
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('roll');
   const [houseFilter, setHouseFilter] = useState('');
   const [bloodGroupFilter, setBloodGroupFilter] = useState('');
+  const [seriesFilter, setSeriesFilter] = useState('');
   const navigate = useNavigate();
 
-  const filteredPeople = usePeopleFilter(people, query, sortBy, houseFilter, bloodGroupFilter);
+  // Filter people based on public profile visibility
+  // If user is not authenticated, only show profiles marked as public
+  const visiblePeople = useMemo(() => {
+    if (isAuthenticated) {
+      return people; // Authenticated users see all profiles
+    }
+    // Non-authenticated users only see public profiles
+    return people.filter(person => person.isPublicProfile !== false);
+  }, [people, isAuthenticated]);
+
+  // Get available series from data (first 2 digits of roll number)
+  const availableSeries = useMemo(() => {
+    const seriesSet = new Set<string>();
+    visiblePeople.forEach(person => {
+      if (person?.roll && person.roll.length >= 2) {
+        seriesSet.add(person.roll.substring(0, 2));
+      }
+    });
+    return Array.from(seriesSet).sort((a, b) => parseInt(b) - parseInt(a)); // Sort descending (newest first)
+  }, [visiblePeople]);
+
+  const filteredPeople = usePeopleFilter(visiblePeople, query, sortBy, houseFilter, bloodGroupFilter, seriesFilter);
 
   const resetFilters = () => {
     setQuery('');
     setSortBy('roll');
     setHouseFilter('');
     setBloodGroupFilter('');
+    setSeriesFilter('');
     pagination.goToPage(1);
   };
 
@@ -40,7 +65,7 @@ export function GreatHallPage() {
   const paginatedPeople = pagination.paginateItems(filteredPeople);
 
   const handleOpenPerson = (person: Person) => {
-    navigate(`/wizard/${person.id}`);
+    navigate(`/wizard/${person.roll}`);
   };
 
   return (
@@ -99,12 +124,15 @@ export function GreatHallPage() {
             <GreatHall
               sortBy={sortBy}
               setSortBy={setSortBy}
-              totalCount={people.length}
+              totalCount={visiblePeople.length}
               filteredCount={filteredPeople.length}
               houseFilter={houseFilter}
               setHouseFilter={setHouseFilter}
               bloodGroupFilter={bloodGroupFilter}
               setBloodGroupFilter={setBloodGroupFilter}
+              seriesFilter={seriesFilter}
+              setSeriesFilter={setSeriesFilter}
+              availableSeries={availableSeries}
               currentPage={pagination.currentPage}
               totalPages={pagination.totalPages}
               pageSize={pagination.pageSize}

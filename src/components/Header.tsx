@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/Button';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface HeaderProps {
-  query: string;
-  setQuery: (query: string) => void;
+  query?: string;
+  setQuery?: (query: string) => void;
 }
 
 export function Header({
-  query,
+  query = '',
   setQuery,
 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
@@ -305,11 +305,12 @@ export function Header({
             </Link>
             {/* Primary navigation (desktop + tablet) - now shows on sm screens */}
             <nav className="hidden sm:flex items-center gap-1">
-              <Link to="/" className={navLinkClass('/')}>Home</Link>
               <Link to="/greathall" className={navLinkClass('/greathall')}>Great Hall</Link>
               <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
+              <Link to="/pomodoro" className={navLinkClass('/pomodoro')}>Focus</Link>
+              <Link to="/materials" className={navLinkClass('/materials')}>Library</Link>
               <Link to="/calendar" className={navLinkClass('/calendar')}>Calendar</Link>
-              <Link to="/pensieve" className={navLinkClass('/pensieve')}>Pensieve</Link>
+              <Link to="/pensieve" className={navLinkClass('/pensieve')}>Memories</Link>
             </nav>
           </div>
 
@@ -323,7 +324,7 @@ export function Header({
               <input
                 id="search"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setQuery?.(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Search name, roll, blood..."
@@ -348,7 +349,7 @@ export function Header({
               {/* clear button */}
               {query && (
                 <button
-                  onClick={() => setQuery('')}
+                  onClick={() => setQuery?.('')}
                   className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 dark:text-gray-400 dark:hover:text-gray-200"
                   aria-label="Clear search"
                   title="Clear search"
@@ -412,7 +413,7 @@ export function Header({
             type="text"
             placeholder="Search..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setQuery?.(e.target.value)}
             className="flex-1 rounded-full border border-gray-300/50 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
             aria-label="Search for wizards"
           />
@@ -448,11 +449,12 @@ export function Header({
         </div>
         {/* Primary navigation (mobile) - centered */}
         <nav className="mt-2 flex items-center justify-center gap-1 overflow-x-auto no-scrollbar">
-          <Link to="/" className={navLinkClass('/')}>Home</Link>
           <Link to="/greathall" className={navLinkClass('/greathall')}>Hall</Link>
           <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
+          <Link to="/pomodoro" className={navLinkClass('/pomodoro')}>Focus</Link>
+          <Link to="/materials" className={navLinkClass('/materials')}>Library</Link>
           <Link to="/calendar" className={navLinkClass('/calendar')}>Calendar</Link>
-          <Link to="/pensieve" className={navLinkClass('/pensieve')}>Pensieve</Link>
+          <Link to="/pensieve" className={navLinkClass('/pensieve')}>Memories</Link>
         </nav>
       </div>
 

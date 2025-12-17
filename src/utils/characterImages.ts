@@ -1,3 +1,5 @@
+import type { Person } from '@/types';
+
 // Utility to fetch Harry Potter character images
 export async function fetchHPCharacterImage(
   characterName: string
@@ -8,7 +10,7 @@ export async function fetchHPCharacterImage(
 
     // Find character by name (case insensitive)
     const character = characters.find(
-      (char: any) =>
+      (char: { name: string; image?: string }) =>
         char.name.toLowerCase().includes(characterName.toLowerCase()) ||
         characterName.toLowerCase().includes(char.name.toLowerCase())
     );
@@ -30,12 +32,25 @@ export const specialCharacterImages = {
     'https://static.wikia.nocookie.net/harrypotter/images/6/64/Dobby_2.jpg/revision/latest?cb=20161215051802',
 };
 
+// Default avatar fallback
+const DEFAULT_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+
 // Get character image with fallback
-export async function getCharacterAvatar(_person: {
-  name: string;
-  isSpecial?: boolean;
-  specialType?: string;
-}) {
-  // Always return a generic male avatar image for all characters
-  return 'https://randomuser.me/api/portraits/men/1.jpg';
+export async function getCharacterAvatar(person: Pick<Person, 'avatar' | 'name' | 'roll'>): Promise<string> {
+  // If person has an avatar URL, use it
+  if (person.avatar && person.avatar.trim() !== '') {
+    return person.avatar;
+  }
+
+  // Generate a consistent avatar based on roll number for those without avatars
+  if (person.roll) {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${person.roll}`;
+  }
+
+  // Final fallback using name
+  if (person.name) {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.name)}`;
+  }
+
+  return DEFAULT_AVATAR;
 }

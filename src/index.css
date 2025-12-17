@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
+
 /* Clean theme system with proper color definitions */
 :root {
   /* Light mode colors */
@@ -43,35 +44,93 @@
 
 /* Hide scrollbars but keep scrolling */
 .scroll-hidden::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none;
+  /* Chrome, Safari, Edge */
 }
+
 .scroll-hidden {
-  -ms-overflow-style: none; /* IE + Edge Legacy */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE + Edge Legacy */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Hide all scrollbars globally */
 ::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none;
+  /* Chrome, Safari, Edge */
 }
 
 html {
-  -ms-overflow-style: none; /* IE + Edge Legacy */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE + Edge Legacy */
+  scrollbar-width: none;
+  /* Firefox */
   overflow-x: hidden;
 }
 
 body {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE + Edge Legacy */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE + Edge Legacy */
 }
 
 /* Ensure all scrollable elements hide scrollbars */
 * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE + Edge Legacy */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE + Edge Legacy */
 }
 
 *::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none;
+  /* Chrome, Safari, Edge */
+}
+
+/* Improved focus styles - subtle and consistent */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid rgb(139 92 246 / 0.5);
+  /* subtle purple */
+  outline-offset: 2px;
+}
+
+/* Override default browser focus ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid rgb(139 92 246 / 0.5);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Form elements focus state */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgb(139 92 246 / 0.7);
+  box-shadow: 0 0 0 3px rgb(139 92 246 / 0.15);
+}
+
+/* Dark mode focus adjustments */
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgb(167 139 250 / 0.7);
+  box-shadow: 0 0 0 3px rgb(167 139 250 / 0.15);
+}
+
+/* Button focus - no ring, just subtle scale/shadow */
+button:focus-visible {
+  outline: 2px solid rgb(139 92 246 / 0.4);
+  outline-offset: 2px;
 }

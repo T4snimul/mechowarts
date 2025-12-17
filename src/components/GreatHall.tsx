@@ -10,6 +10,9 @@ interface GreatHallProps {
   setHouseFilter: (house: string) => void;
   bloodGroupFilter: string;
   setBloodGroupFilter: (bloodGroup: string) => void;
+  seriesFilter: string;
+  setSeriesFilter: (series: string) => void;
+  availableSeries: string[];
   currentPage?: number;
   totalPages?: number;
   pageSize?: number;
@@ -27,6 +30,9 @@ export function GreatHall({
   setHouseFilter,
   bloodGroupFilter,
   setBloodGroupFilter,
+  seriesFilter,
+  setSeriesFilter,
+  availableSeries,
   currentPage,
   totalPages,
   startIndex,
@@ -60,16 +66,27 @@ export function GreatHall({
     { value: 'O-', label: 'O-' },
   ];
 
+  // Generate series options dynamically based on available series
+  const seriesOptions = [
+    { value: '', label: 'All Series' },
+    ...availableSeries.map(series => ({
+      value: series,
+      label: `${series} Series (20${series}-20${parseInt(series) + 1})`,
+    })),
+  ];
+
   const clearAllFilters = () => {
     setHouseFilter('');
     setBloodGroupFilter('');
+    setSeriesFilter('');
     setSortBy('roll');
   };
 
-  const hasActiveFilters = houseFilter || bloodGroupFilter || sortBy !== 'roll';
+  const hasActiveFilters = houseFilter || bloodGroupFilter || seriesFilter || sortBy !== 'roll';
   const activeFilters = [
     houseFilter ? { label: 'House', value: houseFilter, clear: () => setHouseFilter('') } : null,
     bloodGroupFilter ? { label: 'Blood', value: bloodGroupFilter, clear: () => setBloodGroupFilter('') } : null,
+    seriesFilter ? { label: 'Series', value: `${seriesFilter} Series`, clear: () => setSeriesFilter('') } : null,
     sortBy !== 'roll' ? { label: 'Sort', value: sortOptions.find((o) => o.value === sortBy)?.label ?? sortBy, clear: () => setSortBy('roll') } : null,
   ].filter(Boolean) as { label: string; value: string; clear: () => void }[];
 
@@ -142,6 +159,16 @@ export function GreatHall({
               options={bloodGroupOptions}
               placeholder="Filter by blood status"
             />
+
+            {/* Series Filter */}
+            {availableSeries.length > 0 && (
+              <CustomSelect
+                value={seriesFilter}
+                onChange={setSeriesFilter}
+                options={seriesOptions}
+                placeholder="Filter by series"
+              />
+            )}
           </div>
         </div>
 

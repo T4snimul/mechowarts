@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { isValidRuetEmail, isDevelopment } from '@/utils';
 
-const RUET_EMAIL_PATTERN = /^24080\d{2}@student\.ruet\.ac\.bd$/;
+const BASIC_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ValidationError {
   email?: string;
@@ -17,7 +18,16 @@ export function useAuthValidation() {
       return false;
     }
 
-    if (!RUET_EMAIL_PATTERN.test(email)) {
+    // In development, allow any valid email
+    if (isDevelopment()) {
+      if (!BASIC_EMAIL_PATTERN.test(email)) {
+        setErrors(prev => ({
+          ...prev,
+          email: 'Please enter a valid email address'
+        }));
+        return false;
+      }
+    } else if (!isValidRuetEmail(email)) {
       setErrors(prev => ({
         ...prev,
         email: 'Email must be in format: 24080xx@student.ruet.ac.bd'

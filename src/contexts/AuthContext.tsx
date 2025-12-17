@@ -22,6 +22,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   error: string | null;
   sendMagicLink: (email: string) => Promise<boolean>;
+  signInWithPassword: (email: string, password: string) => Promise<boolean>;
+  signUp: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
   clearError: () => void;
@@ -169,6 +171,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
+   * Sign in with email and password
+   */
+  const signInWithPassword = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+
+    if (!isValidRuetEmail(email)) {
+      const errorMsg = isDevelopment()
+        ? 'Please enter a valid email address'
+        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
+      setError(errorMsg);
+      return false;
+    }
+
+    setIsLoading(true);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      console.error('[Auth] Password login error:', signInError.message);
+      setError(signInError.message);
+      setIsLoading(false);
+      return false;
+    }
+
+    await fetchUser();
+    setIsLoading(false);
+    return true;
+  }, [fetchUser]);
+
+  /**
+   * Sign up with email and password
+   */
+  const signUp = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+
+    if (!isValidRuetEmail(email)) {
+      const errorMsg = isDevelopment()
+        ? 'Please enter a valid email address'
+        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
+      setError(errorMsg);
+      return false;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+
+    setIsLoading(true);
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+
+    if (signUpError) {
+      console.error('[Auth] Sign up error:', signUpError.message);
+      setError(signUpError.message);
+      setIsLoading(false);
+      return false;
+    }
+
+    setIsLoading(false);
+    return true;
+  }, []);
+
+  /**
    * Log out the current user
    */
   const logout = useCallback(async () => {
@@ -210,11 +285,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       error,
       sendMagicLink,
+      signInWithPassword,
+      signUp,
       logout,
       refetchUser,
       clearError,
     }),
-    [user, isLoading, error, sendMagicLink, logout, refetchUser, clearError]
+    [user, isLoading, error, sendMagicLink, signInWithPassword, signUp, logout, refetchUser, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

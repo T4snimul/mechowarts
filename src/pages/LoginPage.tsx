@@ -1,26 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isValidRuetEmail, isDevelopment } from '@/utils';
+import { BackButton } from '@/components/ui/BackButton';
+
+const RETRY_COOLDOWN_SECONDS = 60;
+
+type LoginMethod = 'magic' | 'password';
 
 export function LoginPage() {
-  const { sendMagicLink, isAuthenticated, isLoading, error, clearError } = useAuth();
+  const { sendMagicLink, signInWithPassword, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('magic');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(0);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startCountdown = useCallback(() => {
+    setCountdown(RETRY_COOLDOWN_SECONDS);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          if (countdownRef.current) clearInterval(countdownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    if (countdown > 0) return;
+    setStatus('idle');
+    clearError?.();
+  }, [countdown, clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email format (RUET restriction only in production)
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!isValidRuetEmail(trimmedEmail)) {
+      setStatus('error');
+      setStatusMessage(
+        isDevelopment()
+          ? 'Please enter a valid email address'
+          : 'Please use a valid RUET email (24080XX@student.ruet.ac.bd)'
+      );
+      return;
+    }
+
+    // Password validation for password login
+    if (loginMethod === 'password' && !password) {
+      setStatus('error');
+      setStatusMessage('Please enter your password');
+      return;
+    }
+
     setStatus('sending');
     setStatusMessage(null);
     clearError?.();
 
-    const ok = await sendMagicLink(email.trim());
-    if (ok) {
-      setStatus('sent');
-      setStatusMessage('✨ Magic link sent! Check your email inbox and click the link to sign in.');
+    if (loginMethod === 'magic') {
+      const ok = await sendMagicLink(email.trim());
+      if (ok) {
+        setStatus('sent');
+        setStatusMessage('✨ Magic link sent! Check your email inbox and click the link to sign in.');
+        startCountdown(); // Start countdown after successful send
+      } else {
+        setStatus('error');
+        setStatusMessage(error || 'Failed to send magic link. Please try again.');
+      }
     } else {
-      setStatus('error');
+      const ok = await signInWithPassword(email.trim(), password);
+      if (ok) {
+        setStatus('sent');
+        setStatusMessage('🔐 Login successful! Redirecting...');
+        // Navigation handled by useEffect
+      } else {
+        setStatus('error');
+        setStatusMessage(error || 'Invalid email or password. Please try again.');
+      }
     }
   };
 
@@ -29,6 +93,13 @@ export function LoginPage() {
       navigate('/greathall');
     }
   }, [isAuthenticated, navigate]);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900">
@@ -51,16 +122,7 @@ export function LoginPage() {
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
         {/* Back to Home link */}
         <div className="absolute top-4 left-4">
-          <a
-            href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white/90 hover:bg-white/20 backdrop-blur-sm transition"
-            aria-label="Back to Home"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            Back to Home
-          </a>
+          <BackButton to="/" variant="light" />
         </div>
         {/* Logo/Title */}
         <div className="text-center mb-8 animate-fade-in">
@@ -80,7 +142,7 @@ export function LoginPage() {
         {/* Login card */}
         <div className="w-full max-w-md">
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl shadow-purple-900/50 animate-slide-up">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="inline-block p-4 bg-gradient-to-br from-amber-400/20 to-purple-500/20 rounded-full mb-4">
                 <svg className="w-16 h-16 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -94,19 +156,63 @@ export function LoginPage() {
               </p>
             </div>
 
+            {/* Login method tabs */}
+            <div className="flex mb-6 bg-white/5 rounded-xl p-1">
+              <button
+                type="button"
+                onClick={() => { setLoginMethod('magic'); setStatus('idle'); clearError?.(); }}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${loginMethod === 'magic'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'text-purple-200/70 hover:text-white'
+                  }`}
+              >
+                ✨ Magic Link
+              </button>
+              <button
+                type="button"
+                onClick={() => { setLoginMethod('password'); setStatus('idle'); clearError?.(); }}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${loginMethod === 'password'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'text-purple-200/70 hover:text-white'
+                  }`}
+              >
+                🔑 Password
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <label className="block text-sm font-medium text-purple-200/90 text-left">
-                RUET Email
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="24080xx@student.ruet.ac.bd"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={status === 'sending'}
-                className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-purple-200/60 focus:outline-none focus:ring-2 focus:ring-amber-300/80 disabled:opacity-50"
-              />
+              <div>
+                <label className="block text-sm font-medium text-purple-200/90 text-left mb-1">
+                  RUET Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="24080xx@student.ruet.ac.bd"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={status === 'sending'}
+                  className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-purple-200/60 focus:outline-none focus:ring-2 focus:ring-amber-300/80 disabled:opacity-50"
+                />
+              </div>
+
+              {loginMethod === 'password' && (
+                <div>
+                  <label className="block text-sm font-medium text-purple-200/90 text-left mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={status === 'sending'}
+                    className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-purple-200/60 focus:outline-none focus:ring-2 focus:ring-amber-300/80 disabled:opacity-50"
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={status === 'sending' || isLoading}
@@ -119,16 +225,16 @@ export function LoginPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      <span className="text-lg">Sending magic link...</span>
+                      <span className="text-lg">{loginMethod === 'magic' ? 'Sending magic link...' : 'Signing in...'}</span>
                     </>
-                  ) : status === 'sent' ? (
+                  ) : status === 'sent' && loginMethod === 'magic' ? (
                     <>
                       <span className="text-lg">✓ Check your email</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-lg">Send magic link</span>
-                      <span className="text-sm text-white/80">✉️</span>
+                      <span className="text-lg">{loginMethod === 'magic' ? 'Send magic link' : 'Sign in'}</span>
+                      <span className="text-sm text-white/80">{loginMethod === 'magic' ? '✉️' : '🔓'}</span>
                     </>
                   )}
                 </div>
@@ -140,15 +246,23 @@ export function LoginPage() {
             {status === 'sent' && statusMessage && (
               <div className="mt-4 p-4 bg-green-500/20 border border-green-400/30 rounded-xl">
                 <p className="text-center text-sm text-green-200">{statusMessage}</p>
-                <p className="text-center text-xs text-green-200/70 mt-2">
-                  Didn't receive it? Check spam folder or{' '}
-                  <button
-                    onClick={() => setStatus('idle')}
-                    className="underline hover:text-green-100"
-                  >
-                    try again
-                  </button>
-                </p>
+                {loginMethod === 'magic' && (
+                  <p className="text-center text-xs text-green-200/70 mt-2">
+                    Didn't receive it? Check spam folder or{' '}
+                    {countdown > 0 ? (
+                      <span className="text-amber-300">
+                        wait {countdown}s to try again
+                      </span>
+                    ) : (
+                      <button
+                        onClick={handleRetry}
+                        className="underline hover:text-green-100"
+                      >
+                        try again
+                      </button>
+                    )}
+                  </p>
+                )}
               </div>
             )}
 
@@ -156,25 +270,39 @@ export function LoginPage() {
             {(error || status === 'error') && (
               <div className="mt-4 p-4 bg-red-500/20 border border-red-400/30 rounded-xl">
                 <p className="text-center text-sm text-red-200">
-                  {error || 'Something went wrong. Please try again.'}
+                  {statusMessage || error || 'Something went wrong. Please try again.'}
                 </p>
-                <button
-                  onClick={() => {
-                    setStatus('idle');
-                    clearError?.();
-                  }}
-                  className="w-full mt-2 text-xs text-red-200/70 hover:text-red-100 underline"
-                >
-                  Try again
-                </button>
+                {countdown > 0 ? (
+                  <p className="w-full mt-2 text-xs text-amber-300 text-center">
+                    Wait {countdown}s before trying again
+                  </p>
+                ) : (
+                  <button
+                    onClick={handleRetry}
+                    className="w-full mt-2 text-xs text-red-200/70 hover:text-red-100 underline"
+                  >
+                    Try again
+                  </button>
+                )}
               </div>
             )}
 
             {/* Info text */}
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-purple-200/60">
                 Only RUET students (24080XX@student.ruet.ac.bd) can access
               </p>
+              {loginMethod === 'password' && (
+                <p className="text-sm text-purple-200/80">
+                  Don't have an account?{' '}
+                  <button
+                    onClick={() => navigate('/signup')}
+                    className="text-amber-300 hover:text-amber-200 underline"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              )}
             </div>
 
             {/* Decorative elements */}

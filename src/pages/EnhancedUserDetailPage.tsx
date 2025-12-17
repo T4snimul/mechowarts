@@ -24,8 +24,6 @@ export function EnhancedUserDetailPage() {
   const navigate = useNavigate();
   const [person, setPerson] = useState<EnhancedPerson | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<EnhancedPerson>>({});
 
   const isOwnProfile = isAuthenticated && user?.roll === roll;
 
@@ -36,7 +34,6 @@ export function EnhancedUserDetailPage() {
         const response = await peopleApi.getByRoll(roll);
         if (response.data) {
           setPerson(response.data as EnhancedPerson);
-          setEditData(response.data as EnhancedPerson);
         }
       } catch (error) {
         console.error('Failed to fetch person:', error);
@@ -47,21 +44,6 @@ export function EnhancedUserDetailPage() {
 
     fetchPerson();
   }, [roll]);
-
-  const handleSave = async () => {
-    try {
-      // Only send allowed fields to the API
-      const { house, ...otherFields } = editData;
-      const apiData = house ? { ...otherFields, house: house as Person['house'] } : otherFields;
-      const response = await peopleApi.updateMyProfile(apiData);
-      if (response.data) {
-        setPerson(response.data as EnhancedPerson);
-      }
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -134,23 +116,12 @@ export function EnhancedUserDetailPage() {
             {/* Edit Button */}
             {isOwnProfile && (
               <div>
-                {!isEditing ? (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-white text-gray-900 hover:bg-gray-100"
-                  >
-                    ✏️ Edit Profile
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
-                      💾 Save
-                    </Button>
-                    <Button onClick={() => setIsEditing(false)} className="bg-gray-500 hover:bg-gray-600">
-                      ✖️ Cancel
-                    </Button>
-                  </div>
-                )}
+                <Button
+                  onClick={() => navigate('/profile')}
+                  className="bg-white/90 text-gray-900 hover:bg-white border border-gray-200 shadow-lg"
+                >
+                  ✏️ Edit Profile
+                </Button>
               </div>
             )}
           </div>

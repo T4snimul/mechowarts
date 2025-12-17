@@ -4,7 +4,7 @@ import { FiArrowLeft, FiHome } from 'react-icons/fi';
 interface BackButtonProps {
   to?: string;
   label?: string;
-  variant?: 'default' | 'light' | 'dark';
+  variant?: 'default' | 'light' | 'dark' | 'minimal';
   showHomeIcon?: boolean;
   className?: string;
 }
@@ -33,6 +33,8 @@ export function BackButton({
       'bg-white/10 text-white/90 hover:bg-white/20 border border-white/20',
     dark:
       'bg-gray-900/80 text-white hover:bg-gray-900 border border-gray-700/50',
+    minimal:
+      'bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50 border-none',
   };
 
   return (

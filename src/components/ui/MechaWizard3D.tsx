@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Sparkles, Trail, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Mouse tracking hook
+// Mouse and touch tracking hook
 function useMousePosition() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
@@ -15,8 +15,35 @@ function useMousePosition() {
       });
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        setMouse({
+          x: (touch.clientX / window.innerWidth) * 2 - 1,
+          y: -(touch.clientY / window.innerHeight) * 2 + 1,
+        });
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        setMouse({
+          x: (touch.clientX / window.innerWidth) * 2 - 1,
+          y: -(touch.clientY / window.innerHeight) * 2 + 1,
+        });
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+    };
   }, []);
 
   return mouse;
@@ -291,11 +318,72 @@ function Loader() {
   );
 }
 
-function ErrorFallback({ onReload }: { onReload: () => void }) {
+function ErrorFallback({ onReload, mouseX, mouseY }: { onReload: () => void; mouseX: number; mouseY: number }) {
+  // Calculate subtle movement based on mouse position
+  const offsetX = mouseX * 15;
+  const offsetY = mouseY * 15;
+  const rotateX = mouseY * 10;
+  const rotateY = mouseX * 10;
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 rounded-xl">
-      <div className="text-6xl mb-2">🔮</div>
-      <p className="text-gray-500 dark:text-gray-400">The magic fizzled out...</p>
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 rounded-xl overflow-hidden relative">
+      {/* Animated 2D fallback that follows cursor */}
+      <div
+        className="relative transition-transform duration-300 ease-out"
+        style={{
+          transform: `translate(${offsetX}px, ${offsetY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+          transformStyle: 'preserve-3d',
+          perspective: '1000px',
+        }}
+      >
+        {/* Main magical orb */}
+        <div className="relative">
+          {/* Outer glow ring */}
+          <div
+            className="absolute inset-0 w-32 h-32 rounded-full bg-gradient-to-br from-purple-500/30 to-indigo-500/30 blur-2xl animate-pulse"
+            style={{ animationDuration: '3s' }}
+          />
+
+          {/* Main orb */}
+          <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-purple-700 shadow-2xl shadow-purple-500/50">
+            {/* Inner glow */}
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-purple-400/50 to-transparent" />
+
+            {/* Gear icon in center */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="text-5xl"
+                style={{
+                  animation: 'spin 8s linear infinite',
+                  filter: 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.8))',
+                }}
+              >
+                ⚙️
+              </div>
+            </div>
+
+            {/* Sparkle accents */}
+            <div className="absolute -top-2 -right-2 text-2xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '2s' }}>✨</div>
+            <div className="absolute -bottom-1 -left-1 text-xl animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2.5s' }}>⚡</div>
+            <div className="absolute top-0 left-1/4 text-lg animate-bounce" style={{ animationDelay: '1s', animationDuration: '3s' }}>🔮</div>
+          </div>
+
+          {/* Orbiting wand */}
+          <div
+            className="absolute -right-8 top-1/2 text-3xl"
+            style={{
+              animation: 'float 4s ease-in-out infinite',
+            }}
+          >
+            🪄
+          </div>
+        </div>
+      </div>
+
+      <p className="text-gray-500 dark:text-gray-400 text-center mt-4">
+        <span className="block text-lg font-medium mb-1">The magic fizzled out...</span>
+        <span className="text-sm opacity-75">But this enchanted orb still works!</span>
+      </p>
       <button
         onClick={onReload}
         className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2"
@@ -303,8 +391,20 @@ function ErrorFallback({ onReload }: { onReload: () => void }) {
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        Cast Again
+        Try 3D Again
       </button>
+
+      {/* CSS keyframes for animations */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(-15deg); }
+          50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -326,7 +426,7 @@ export function MechaWizard3D({ className = '' }: MechaWizard3DProps) {
   if (hasError) {
     return (
       <div className={`w-full h-full relative ${className}`} style={{ minHeight: '400px' }}>
-        <ErrorFallback onReload={handleReload} />
+        <ErrorFallback onReload={handleReload} mouseX={mouse.x} mouseY={mouse.y} />
       </div>
     );
   }

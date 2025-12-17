@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { usePeopleFromAPI } from '@/hooks/usePeopleFromAPI';
+import { BackButton } from '@/components/ui/BackButton';
 import io, { Socket } from 'socket.io-client';
 
 interface Message {
@@ -169,16 +170,7 @@ export function OwleryPage() {
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setSidebarOpen(false);
-                navigate(-1);
-              }}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title="Go Back"
-            >
-              ←
-            </button>
+            <BackButton to="/greathall" variant="minimal" />
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
                 🦉 Owlery
@@ -205,8 +197,8 @@ export function OwleryPage() {
                 setSidebarOpen(false);
               }}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${chatMode === 'group'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               🏰 Great Hall
@@ -214,8 +206,8 @@ export function OwleryPage() {
             <button
               onClick={() => setChatMode('direct')}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${chatMode === 'direct'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               📨 DMs
@@ -264,8 +256,8 @@ export function OwleryPage() {
                       setSidebarOpen(false);
                     }}
                     className={`w-full p-3 rounded-lg text-left transition-colors ${selectedUser?.id === listUser.id && chatMode === 'direct'
-                        ? 'bg-indigo-600'
-                        : 'hover:bg-gray-700'
+                      ? 'bg-indigo-600'
+                      : 'hover:bg-gray-700'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -356,8 +348,8 @@ export function OwleryPage() {
                           )}
                           <div
                             className={`px-4 py-2 rounded-2xl ${isOwn
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-gray-700 text-white'
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-700 text-white'
                               }`}
                           >
                             <p className="break-words">{message.text}</p>
@@ -471,8 +463,8 @@ export function OwleryPage() {
                         <div>
                           <div
                             className={`px-4 py-2 rounded-2xl ${isOwn
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-gray-700 text-white'
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-700 text-white'
                               }`}
                           >
                             <p className="break-words">{message.text}</p>

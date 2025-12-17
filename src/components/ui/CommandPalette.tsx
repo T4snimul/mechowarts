@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiSearch, FiHome, FiUsers, FiCalendar, FiBook, FiClock,
   FiMessageCircle, FiMail, FiUser, FiLogOut, FiLogIn,
-  FiSun, FiMoon, FiSettings, FiArrowRight, FiCommand
+  FiSun, FiMoon, FiArrowRight
 } from 'react-icons/fi';
 
 interface CommandItem {
@@ -30,7 +30,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, logout } = useAuth();
 
@@ -211,15 +210,30 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const totalItems = filteredCommands.length;
+    if (totalItems === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
+      case 'j': // Vim-style down
+        if (e.key === 'j' && e.target instanceof HTMLInputElement && (e.target as HTMLInputElement).value) break;
         e.preventDefault();
         setSelectedIndex(prev => (prev + 1) % totalItems);
         break;
       case 'ArrowUp':
+      case 'k': // Vim-style up
+        if (e.key === 'k' && e.target instanceof HTMLInputElement && (e.target as HTMLInputElement).value) break;
         e.preventDefault();
         setSelectedIndex(prev => (prev - 1 + totalItems) % totalItems);
+        break;
+      case 'g': // Vim-style go to top (gg)
+        if (e.target instanceof HTMLInputElement && (e.target as HTMLInputElement).value) break;
+        e.preventDefault();
+        setSelectedIndex(0);
+        break;
+      case 'G': // Vim-style go to bottom
+        if (e.target instanceof HTMLInputElement && (e.target as HTMLInputElement).value) break;
+        e.preventDefault();
+        setSelectedIndex(totalItems - 1);
         break;
       case 'Enter':
         e.preventDefault();
@@ -332,8 +346,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                               data-selected={isSelected}
                               onClick={() => executeCommand(command)}
                               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${isSelected
-                                  ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
-                                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
+                                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                                 }`}
                             >
                               <span className={`flex-shrink-0 ${isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>

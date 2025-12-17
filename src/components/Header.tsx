@@ -16,7 +16,6 @@ export function Header({
   query = '',
   setQuery,
 }: HeaderProps) {
-  const [scrolled, setScrolled] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -43,17 +42,6 @@ export function Header({
       ? "bg-purple-100/70 text-purple-800 ring-1 ring-purple-200/80 dark:bg-purple-900/40 dark:text-purple-100 dark:ring-purple-800/60"
       : "text-gray-700 hover:bg-gray-100/70 dark:text-gray-300 dark:hover:bg-gray-800/70",
   ].join(" ");
-
-  useEffect(() => {
-    const scroller = document.getElementById("main-content") || window;
-    const getY = () =>
-      scroller === window ? window.scrollY : (scroller as HTMLElement).scrollTop;
-
-    const onScroll = () => setScrolled(getY() > 2);
-    onScroll();
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    return () => scroller.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -123,90 +111,126 @@ export function Header({
         )}
       </div>
 
+      {/* Quick Links Section */}
+      <div className="px-2 py-2 border-b border-gray-200/70 dark:border-gray-700/50">
+        <p className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Quick Access</p>
+        <div className="grid grid-cols-3 gap-1 mt-1">
+          <Link
+            to="/greathall"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">🏰</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Hall</span>
+          </Link>
+          <Link
+            to="/owlery"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">🦉</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Owlery</span>
+          </Link>
+          <Link
+            to="/materials"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">📚</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Library</span>
+          </Link>
+          <Link
+            to="/calendar"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">📅</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Calendar</span>
+          </Link>
+          <Link
+            to="/pomodoro"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">⏱️</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Focus</span>
+          </Link>
+          <Link
+            to="/pensieve"
+            onClick={() => closeMenu()}
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-lg">💭</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Memories</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Visual Settings - Compact */}
+      <div className="px-3 py-2 border-b border-gray-200/70 dark:border-gray-700/50">
+        <p className="px-0 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Visual</p>
+        <div className="flex items-center gap-2 mt-1">
+          <button
+            onClick={() => setEnableAnimations(!enableAnimations)}
+            className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${enableAnimations
+                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              }`}
+          >
+            ✨ Animations
+          </button>
+          <button
+            onClick={() => setEnableBackgroundEffects(!enableBackgroundEffects)}
+            className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${enableBackgroundEffects
+                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              }`}
+          >
+            🌌 Effects
+          </button>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            onClick={() => setReducedMotion(!reducedMotion)}
+            className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${reducedMotion
+                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              }`}
+          >
+            🐢 Reduced
+          </button>
+          <button
+            onClick={() => setHighContrast(!highContrast)}
+            className={`flex-1 px-2 py-1.5 text-xs rounded-lg border transition-colors ${highContrast
+                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300'
+                : 'border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400'
+              }`}
+          >
+            🔲 Contrast
+          </button>
+        </div>
+      </div>
+
+      {/* Account Section */}
       <div className="p-3 space-y-2">
-        {/* Settings toggles inline */}
-        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 8v8M8 12h8" />
-            </svg>
-            Animations
-          </span>
-          <input
-            type="checkbox"
-            checked={enableAnimations}
-            onChange={(e) => setEnableAnimations(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
-          />
-        </label>
-
-        <button
-          onClick={() => {
-            setEnableBackgroundEffects(!enableBackgroundEffects);
-            closeMenu();
-          }}
-          className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-        >
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2.2 14.7 8l5.8.8-4.3 4.1 1 6-5.2-3-5.2 3 1-6L3.5 8.8 9.3 8l2.7-5.8Z" />
-            </svg>
-            Magical background
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">{enableBackgroundEffects ? 'On' : 'Off'}</span>
-        </button>
-
-        {/* Divider */}
-        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
-
-        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 4h16v16H4z" />
-            </svg>
-            Reduced motion
-          </span>
-          <input
-            type="checkbox"
-            checked={reducedMotion}
-            onChange={(e) => setReducedMotion(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
-          />
-        </label>
-
-        <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 4h16M4 12h16M4 20h16" />
-            </svg>
-            High contrast
-          </span>
-          <input
-            type="checkbox"
-            checked={highContrast}
-            onChange={(e) => setHighContrast(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600"
-          />
-        </label>
-
-        {/* Divider */}
-        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
-
         {isAuthenticated ? (
           <>
             {/* My Profile Link */}
             <Link
               to="/profile"
               onClick={() => closeMenu()}
-              className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
+              className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
             >
-              <span className="flex items-center gap-2">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-                My Profile
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Edit</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
+                {user?.name?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{user?.name || 'My Profile'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">View & edit profile</p>
+              </div>
+              <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+              </svg>
             </Link>
 
             {/* Logout */}
@@ -215,15 +239,12 @@ export function Header({
                 logout();
                 closeMenu();
               }}
-              className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/30"
+              className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
             >
-              <span className="flex items-center gap-2">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M16 13v-2H7V8l-5 4 5 4v-3h9z" />
-                </svg>
-                Logout
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Exit</span>
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+              Sign out
             </button>
           </>
         ) : (
@@ -232,61 +253,34 @@ export function Header({
               setAuthModalOpen(true);
               closeMenu();
             }}
-            variant="outline"
-            className="w-full justify-between px-3 py-2.5"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             size="sm"
           >
-            <span className="flex items-center gap-2">
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              </svg>
-              Sign in
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">Auth</span>
+            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+            </svg>
+            Sign in to MechoWarts
           </Button>
         )}
+      </div>
+
+      {/* Keyboard shortcut hint */}
+      <div className="px-3 py-2 border-t border-gray-200/70 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+          Press <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-[10px] font-mono">Ctrl+K</kbd> for command palette
+        </p>
       </div>
     </div>
   );
 
   return (
     <header
-      className={[
-        "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        scrolled ? "py-2" : "py-2.5",
-      ].join(" ")}
+      className="sticky top-0 z-40 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-200/70 dark:border-gray-700/50 shadow-sm"
     >
-      {/* Desktop/Tablet Header - Rounded with margins */}
+      {/* Desktop/Tablet Header */}
       <div
-        className={[
-          "hidden sm:block relative mx-auto px-4 sm:px-6 md:px-8 py-2 rounded-xl sm:mx-2 md:mx-4 lg:mx-6",
-          // glass bar with rounded corners
-          "backdrop-blur-md",
-          // border + lift on scroll
-          scrolled
-            ? "bg-white/80 dark:bg-gray-900/90 ring-1 ring-purple-200/50 dark:ring-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
-            : "bg-white/60 dark:bg-gray-900/80 ring-1 ring-purple-200/40 dark:ring-purple-500/20",
-          "transition-all duration-300",
-        ].join(" ")}
+        className="hidden sm:block relative mx-auto px-4 sm:px-6 md:px-8 py-2.5"
       >
-        {/* Decorative subtle glyphs (background only) */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-6 left-8 text-gray-500/30 dark:text-gray-400/20 text-2xl select-none">
-
-          </div>
-          <div className="absolute bottom-0 right-10 text-gray-500/30 dark:text-gray-400/20 text-xl select-none">
-
-          </div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 text-gray-500/20 dark:text-gray-500/15 text-4xl select-none">
-
-          </div>
-        </div>
-
         {/* Content */}
         <div className="relative flex flex-wrap items-center justify-between gap-3 md:gap-4 py-1">
           {/* Logo + Nav */}
@@ -406,8 +400,8 @@ export function Header({
         </div>
       </div>
 
-      {/* Mobile Header - Full width, flat */}
-      <div className="sm:hidden relative w-full px-4 py-2 bg-white/80 dark:bg-gray-900/90 border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-md">
+      {/* Mobile Header */}
+      <div className="sm:hidden relative w-full px-4 py-2.5">
         <div className="flex items-center gap-2">
           <input
             type="text"

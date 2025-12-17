@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { Modal, ModalBody } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { BackButton } from '@/components/ui/BackButton';
@@ -38,16 +36,7 @@ const MODE_BG: Record<TimerMode, string> = {
   longBreak: 'from-indigo-500 via-blue-600 to-purple-700',
 };
 
-const MODE_ACCENT: Record<TimerMode, string> = {
-  work: 'purple',
-  shortBreak: 'teal',
-  longBreak: 'indigo',
-};
-
 export function PomodoroPage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
   // Timer state
   const [mode, setMode] = useState<TimerMode>('work');
   const [settings, setSettings] = useState<TimerSettings>(DEFAULT_SETTINGS);

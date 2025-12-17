@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { ProfileCardProps, PrivacyLevel } from '@/types';
 import { getHouseClasses, cn } from '@/utils';
@@ -23,6 +24,7 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
   const { chip } = getHouseClasses(person.house);
   const { enableAnimations } = useSettings();
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Check privacy for contact info
   const showPhone = person.phone && isFieldVisible(person.privacy?.phone, isAuthenticated);
@@ -32,6 +34,12 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
   const handleContactClick = (e: React.MouseEvent, url: string) => {
     e.stopPropagation();
     window.open(url, '_blank');
+  };
+
+  const handleDMClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to Owlery with the user pre-selected for DM
+    navigate(`/owlery?dm=${person.roll}`);
   };
 
   return (
@@ -83,6 +91,23 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
 
         {/* Bottom: Contact buttons */}
         <div className="flex justify-center gap-3">
+          {/* DM Button - always show if authenticated */}
+          {isAuthenticated && (
+            <motion.button
+              initial={enableAnimations ? { scale: 0, rotate: -180 } : false}
+              animate={enableAnimations ? { scale: 1, rotate: 0 } : { scale: 1, rotate: 0 }}
+              transition={enableAnimations ? { delay: 0.05, type: "spring", stiffness: 300 } : {}}
+              onClick={handleDMClick}
+              className="p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 pointer-events-auto"
+              aria-label="Send direct message"
+              title="Send DM via Owlery"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </motion.button>
+          )}
+
           {showPhone && (
             <motion.button
               initial={enableAnimations ? { scale: 0, rotate: -180 } : false}
@@ -113,9 +138,9 @@ function CardContentDisplay({ person }: CardContentDisplayProps) {
             </motion.button>
           )}
 
-          {!showPhone && !showFb && (
+          {!isAuthenticated && !showPhone && !showFb && (
             <div className="text-white/70 text-sm bg-black/40 px-4 py-2 rounded-full">
-              🔒 Contact info hidden
+              🔒 Sign in for contact options
             </div>
           )}
         </div>

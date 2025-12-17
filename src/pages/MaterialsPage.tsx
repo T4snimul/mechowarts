@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Modal, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Header } from '../components/Header';
 import {
-  FiFolderPlus, FiFile, FiUpload, FiTrash2,
+  FiFolderPlus, FiFile, FiTrash2,
   FiChevronRight, FiHome, FiSearch, FiMoreVertical, FiEdit2,
   FiFileText, FiImage, FiVideo, FiMusic, FiCode, FiArchive,
-  FiArrowLeft, FiGrid, FiList, FiX, FiCheck
+  FiArrowLeft, FiGrid, FiList, FiCheck, FiLink, FiCopy, FiMove
 } from 'react-icons/fi';
 import { IoFolder } from 'react-icons/io5';
 
@@ -27,11 +31,12 @@ interface FileItem {
   type: 'file';
   parentId: string | null;
   fileType: string; // pdf, doc, image, video, etc.
-  size: number; // in bytes
-  url?: string;
+  size: number; // in bytes (can be 0 for links)
+  url?: string; // Link URL (Google Drive, etc.)
   createdAt: string;
   uploadedBy?: string;
   description?: string;
+  isLink?: boolean; // Flag to indicate this is a link, not an uploaded file
 }
 
 type LibraryItem = FolderItem | FileItem;
@@ -90,7 +95,16 @@ const SAMPLE_DATA: LibraryItem[] = [
 
 export function MaterialsPage() {
   const { theme } = useTheme();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const isDark = theme === 'dark';
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/login', { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   // State
   const [items, setItems] = useState<LibraryItem[]>([]);
@@ -104,13 +118,18 @@ export function MaterialsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [movingItem, setMovingItem] = useState<LibraryItem | null>(null);
+  const [isCopying, setIsCopying] = useState(false); // true = copy, false = move
   const [contextMenuId, setContextMenuId] = useState<string | null>(null);
 
   // Form states
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderColor, setNewFolderColor] = useState(FOLDER_COLORS[0].value);
   const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
-  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [newLinkName, setNewLinkName] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [newLinkDescription, setNewLinkDescription] = useState('');
 
   // Load items from localStorage
   useEffect(() => {
@@ -203,23 +222,33 @@ export function MaterialsPage() {
     setNewFolderColor(FOLDER_COLORS[0].value);
   };
 
-  // Upload files
-  const handleUpload = () => {
-    if (uploadFiles.length === 0) return;
+  // Add a link (replaces file upload)
+  const handleAddLink = () => {
+    if (!newLinkName.trim() || !newLinkUrl.trim()) return;
 
-    const newFiles: FileItem[] = uploadFiles.map(file => ({
+    // Detect file type from URL or name
+    const extension = newLinkName.split('.').pop()?.toLowerCase() ||
+      newLinkUrl.split('.').pop()?.split('?')[0]?.toLowerCase() ||
+      'link';
+
+    const newFile: FileItem = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: file.name,
+      name: newLinkName.trim(),
       type: 'file',
       parentId: currentFolderId,
-      fileType: file.name.split('.').pop() || 'unknown',
-      size: file.size,
+      fileType: extension,
+      size: 0,
+      url: newLinkUrl.trim(),
+      description: newLinkDescription.trim() || undefined,
       createdAt: new Date().toISOString(),
-    }));
+      isLink: true,
+    };
 
-    setItems([...items, ...newFiles]);
+    setItems([...items, newFile]);
     setIsUploadModalOpen(false);
-    setUploadFiles([]);
+    setNewLinkName('');
+    setNewLinkUrl('');
+    setNewLinkDescription('');
   };
 
   // Rename item
@@ -278,8 +307,15 @@ export function MaterialsPage() {
     if (item.type === 'folder') {
       navigateToFolder(item.id);
     } else {
-      // For files, you would typically open a preview or download
-      alert(`Opening file: ${item.name}`);
+      // For links, open in a new tab that looks like opening a file
+      const fileItem = item as FileItem;
+      if (fileItem.url) {
+        // Open the link (Google Drive, etc.)
+        window.open(fileItem.url, '_blank', 'noopener,noreferrer');
+      } else {
+        // Fallback for files without URLs
+        alert(`This file doesn't have a link associated: ${item.name}`);
+      }
     }
   };
 
@@ -308,6 +344,85 @@ export function MaterialsPage() {
     setContextMenuId(null);
   };
 
+  // Start copy
+  const startCopy = (item: LibraryItem) => {
+    setMovingItem(item);
+    setIsCopying(true);
+    setIsMoveModalOpen(true);
+    setContextMenuId(null);
+  };
+
+  // Start move
+  const startMove = (item: LibraryItem) => {
+    setMovingItem(item);
+    setIsCopying(false);
+    setIsMoveModalOpen(true);
+    setContextMenuId(null);
+  };
+
+  // Execute copy/move to target folder
+  const handleCopyMove = (targetFolderId: string | null) => {
+    if (!movingItem) return;
+
+    if (isCopying) {
+      // Copy - create a duplicate with new ID
+      const generateId = () => Math.random().toString(36).substring(2, 15);
+
+      const copyItem = (item: LibraryItem, newParentId: string | null): LibraryItem[] => {
+        const newId = generateId();
+        const copiedItem: LibraryItem = {
+          ...item,
+          id: newId,
+          name: item.id === movingItem.id ? `${item.name} (Copy)` : item.name,
+          parentId: newParentId,
+          createdAt: new Date().toISOString(),
+        };
+
+        // If it's a folder, also copy all children
+        if (item.type === 'folder') {
+          const children = items.filter(i => i.parentId === item.id);
+          const copiedChildren = children.flatMap(child => copyItem(child, newId));
+          return [copiedItem, ...copiedChildren];
+        }
+
+        return [copiedItem];
+      };
+
+      const copiedItems = copyItem(movingItem, targetFolderId);
+      setItems([...items, ...copiedItems]);
+    } else {
+      // Move - update parentId
+      setItems(items.map(i =>
+        i.id === movingItem.id ? { ...i, parentId: targetFolderId } : i
+      ));
+    }
+
+    setIsMoveModalOpen(false);
+    setMovingItem(null);
+  };
+
+  // Get all folders for the move/copy modal (excluding the item being moved and its children)
+  const getAvailableFolders = (): FolderItem[] => {
+    if (!movingItem) return items.filter(i => i.type === 'folder') as FolderItem[];
+
+    // Get all descendant folder IDs to exclude
+    const getDescendantIds = (parentId: string): Set<string> => {
+      const descendants = new Set<string>();
+      items.forEach(item => {
+        if (item.parentId === parentId) {
+          descendants.add(item.id);
+          if (item.type === 'folder') {
+            getDescendantIds(item.id).forEach(id => descendants.add(id));
+          }
+        }
+      });
+      return descendants;
+    };
+
+    const excludeIds = new Set([movingItem.id, ...getDescendantIds(movingItem.id)]);
+    return items.filter(i => i.type === 'folder' && !excludeIds.has(i.id)) as FolderItem[];
+  };
+
   // Close context menu on click outside
   useEffect(() => {
     const handleClickOutside = () => setContextMenuId(null);
@@ -328,21 +443,21 @@ export function MaterialsPage() {
           onContextMenu={(e) => openContextMenu(item.id, e)}
           className={`relative group p-4 rounded-xl cursor-pointer transition-all ${isSelected
             ? isDark
-              ? 'bg-amber-900/30 ring-2 ring-amber-500'
-              : 'bg-amber-100 ring-2 ring-amber-400'
+              ? 'bg-purple-900/30 ring-2 ring-purple-500'
+              : 'bg-purple-100 ring-2 ring-purple-400'
             : isDark
-              ? 'bg-stone-800/50 hover:bg-stone-800'
-              : 'bg-white hover:bg-amber-50 hover:shadow-md'
+              ? 'bg-gray-800/50 hover:bg-gray-800'
+              : 'bg-white hover:bg-purple-50 hover:shadow-md'
             }`}
         >
           {/* Selection checkbox */}
           <div
             onClick={(e) => toggleSelection(item.id, e)}
             className={`absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
-              ? 'bg-amber-500 border-amber-500 text-white'
+              ? 'bg-purple-500 border-purple-500 text-white'
               : isDark
-                ? 'border-stone-600 group-hover:border-stone-500'
-                : 'border-stone-300 group-hover:border-stone-400'
+                ? 'border-gray-600 group-hover:border-gray-500'
+                : 'border-gray-300 group-hover:border-gray-400'
               } ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           >
             {isSelected && <FiCheck className="w-3 h-3" />}
@@ -351,7 +466,7 @@ export function MaterialsPage() {
           {/* More button */}
           <button
             onClick={(e) => openContextMenu(item.id, e)}
-            className={`absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${isDark ? 'hover:bg-stone-700 text-stone-400' : 'hover:bg-stone-100 text-stone-500'
+            className={`absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
               }`}
           >
             <FiMoreVertical className="w-4 h-4" />
@@ -361,17 +476,34 @@ export function MaterialsPage() {
           {contextMenuId === item.id && (
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`absolute top-10 right-2 z-50 w-40 py-1 rounded-lg shadow-xl ${isDark ? 'bg-stone-800 border border-stone-700' : 'bg-white border border-stone-200'
+              className={`absolute top-10 right-2 z-50 w-40 py-1 rounded-lg shadow-xl ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                 }`}
             >
               <button
                 onClick={() => startRename(item)}
-                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-stone-700 text-stone-300' : 'hover:bg-stone-100 text-stone-600'
+                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
               >
                 <FiEdit2 className="w-4 h-4" />
                 Rename
               </button>
+              <button
+                onClick={() => startCopy(item)}
+                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+              >
+                <FiCopy className="w-4 h-4" />
+                Copy to...
+              </button>
+              <button
+                onClick={() => startMove(item)}
+                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+              >
+                <FiMove className="w-4 h-4" />
+                Move to...
+              </button>
+              <div className={`my-1 h-px ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`} />
               <button
                 onClick={() => startDelete(item.id)}
                 className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-500'
@@ -391,19 +523,19 @@ export function MaterialsPage() {
                 style={{ color: (item as FolderItem).color || FOLDER_COLORS[0].value }}
               />
             ) : (
-              <FileIcon className={`w-16 h-16 ${isDark ? 'text-stone-400' : 'text-stone-500'}`} />
+              <FileIcon className={`w-16 h-16 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
             )}
           </div>
 
           {/* Name */}
-          <p className={`text-center text-sm font-medium truncate ${isDark ? 'text-stone-200' : 'text-stone-700'
+          <p className={`text-center text-sm font-medium truncate ${isDark ? 'text-gray-200' : 'text-gray-700'
             }`}>
             {item.name}
           </p>
 
           {/* File size */}
           {item.type === 'file' && (
-            <p className={`text-center text-xs mt-1 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+            <p className={`text-center text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               {formatSize((item as FileItem).size)}
             </p>
           )}
@@ -419,21 +551,21 @@ export function MaterialsPage() {
         onContextMenu={(e) => openContextMenu(item.id, e)}
         className={`relative flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all ${isSelected
           ? isDark
-            ? 'bg-amber-900/30 ring-2 ring-amber-500'
-            : 'bg-amber-100 ring-2 ring-amber-400'
+            ? 'bg-purple-900/30 ring-2 ring-purple-500'
+            : 'bg-purple-100 ring-2 ring-purple-400'
           : isDark
-            ? 'hover:bg-stone-800'
-            : 'hover:bg-amber-50'
+            ? 'hover:bg-gray-800'
+            : 'hover:bg-purple-50'
           }`}
       >
         {/* Selection checkbox */}
         <div
           onClick={(e) => toggleSelection(item.id, e)}
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${isSelected
-            ? 'bg-amber-500 border-amber-500 text-white'
+            ? 'bg-purple-500 border-purple-500 text-white'
             : isDark
-              ? 'border-stone-600 hover:border-stone-500'
-              : 'border-stone-300 hover:border-stone-400'
+              ? 'border-gray-600 hover:border-gray-500'
+              : 'border-gray-300 hover:border-gray-400'
             }`}
         >
           {isSelected && <FiCheck className="w-3 h-3" />}
@@ -446,30 +578,30 @@ export function MaterialsPage() {
             style={{ color: (item as FolderItem).color || FOLDER_COLORS[0].value }}
           />
         ) : (
-          <FileIcon className={`w-8 h-8 flex-shrink-0 ${isDark ? 'text-stone-400' : 'text-stone-500'}`} />
+          <FileIcon className={`w-8 h-8 flex-shrink-0 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
         )}
 
         {/* Name */}
-        <span className={`flex-1 truncate ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>
+        <span className={`flex-1 truncate ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
           {item.name}
         </span>
 
         {/* File size */}
         {item.type === 'file' && (
-          <span className={`text-sm ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+          <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             {formatSize((item as FileItem).size)}
           </span>
         )}
 
         {/* Date */}
-        <span className={`text-sm ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+        <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
           {new Date(item.createdAt).toLocaleDateString()}
         </span>
 
         {/* More button */}
         <button
           onClick={(e) => openContextMenu(item.id, e)}
-          className={`p-1.5 rounded-lg transition-all ${isDark ? 'hover:bg-stone-700 text-stone-400' : 'hover:bg-stone-100 text-stone-500'
+          className={`p-1.5 rounded-lg transition-all ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
             }`}
         >
           <FiMoreVertical className="w-4 h-4" />
@@ -479,17 +611,34 @@ export function MaterialsPage() {
         {contextMenuId === item.id && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`absolute top-full right-0 z-50 w-40 py-1 rounded-lg shadow-xl ${isDark ? 'bg-stone-800 border border-stone-700' : 'bg-white border border-stone-200'
+            className={`absolute top-full right-0 z-50 w-40 py-1 rounded-lg shadow-xl ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
               }`}
           >
             <button
               onClick={() => startRename(item)}
-              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-stone-700 text-stone-300' : 'hover:bg-stone-100 text-stone-600'
+              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                 }`}
             >
               <FiEdit2 className="w-4 h-4" />
               Rename
             </button>
+            <button
+              onClick={() => startCopy(item)}
+              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                }`}
+            >
+              <FiCopy className="w-4 h-4" />
+              Copy to...
+            </button>
+            <button
+              onClick={() => startMove(item)}
+              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                }`}
+            >
+              <FiMove className="w-4 h-4" />
+              Move to...
+            </button>
+            <div className={`my-1 h-px ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`} />
             <button
               onClick={() => startDelete(item.id)}
               className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-500'
@@ -504,17 +653,31 @@ export function MaterialsPage() {
     );
   };
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gradient-to-b from-purple-50/50 via-white to-gray-50'}`}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
-    <div className={`min-h-screen p-6 ${isDark ? 'bg-stone-900' : 'bg-gradient-to-br from-amber-50 to-orange-50'
-      }`}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gradient-to-b from-purple-50/50 via-white to-gray-50'}`}>
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className={`text-3xl font-bold ${isDark ? 'text-amber-400' : 'text-amber-800'}`}>
+            <h1 className={`text-3xl font-bold ${isDark ? 'text-purple-400' : 'text-purple-800'}`}>
               📚 Restricted Section Library
             </h1>
-            <p className={`mt-1 ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+            <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Study materials and resources
             </p>
           </div>
@@ -522,7 +685,7 @@ export function MaterialsPage() {
           <div className="flex items-center gap-2">
             {/* Search */}
             <div className="relative">
-              <FiSearch className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-stone-500' : 'text-stone-400'
+              <FiSearch className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-gray-500' : 'text-gray-400'
                 }`} />
               <input
                 type="text"
@@ -530,19 +693,19 @@ export function MaterialsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search files..."
                 className={`pl-10 pr-4 py-2 rounded-lg border transition-colors ${isDark
-                  ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
-                  : 'bg-white border-stone-300 text-stone-800 placeholder-stone-400'
+                  ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
+                  : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
                   }`}
               />
             </div>
 
             {/* View toggle */}
-            <div className={`flex rounded-lg p-1 ${isDark ? 'bg-stone-800' : 'bg-white'}`}>
+            <div className={`flex rounded-lg p-1 ${isDark ? 'bg-gray-800' : 'bg-white shadow-sm border border-gray-200'}`}>
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-colors ${viewMode === 'grid'
-                  ? isDark ? 'bg-amber-600 text-white' : 'bg-amber-500 text-white'
-                  : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-800'
+                  ? isDark ? 'bg-purple-600 text-white' : 'bg-purple-500 text-white'
+                  : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
                   }`}
               >
                 <FiGrid className="w-5 h-5" />
@@ -550,8 +713,8 @@ export function MaterialsPage() {
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-md transition-colors ${viewMode === 'list'
-                  ? isDark ? 'bg-amber-600 text-white' : 'bg-amber-500 text-white'
-                  : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-800'
+                  ? isDark ? 'bg-purple-600 text-white' : 'bg-purple-500 text-white'
+                  : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
                   }`}
               >
                 <FiList className="w-5 h-5" />
@@ -563,19 +726,19 @@ export function MaterialsPage() {
               <FiFolderPlus className="w-5 h-5" />
             </Button>
             <Button onClick={() => setIsUploadModalOpen(true)}>
-              <FiUpload className="w-5 h-5 mr-1" />
-              Upload
+              <FiLink className="w-5 h-5 mr-1" />
+              Add Link
             </Button>
           </div>
         </div>
 
         {/* Breadcrumbs */}
-        <div className={`flex items-center gap-2 mb-4 p-3 rounded-lg overflow-x-auto ${isDark ? 'bg-stone-800/50' : 'bg-white'
+        <div className={`flex items-center gap-2 mb-4 p-3 rounded-lg overflow-x-auto ${isDark ? 'bg-gray-800/50' : 'bg-white'
           }`}>
           {currentFolderId && (
             <button
               onClick={navigateUp}
-              className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isDark ? 'hover:bg-stone-700 text-stone-400' : 'hover:bg-stone-100 text-stone-500'
+              className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
                 }`}
             >
               <FiArrowLeft className="w-5 h-5" />
@@ -585,8 +748,8 @@ export function MaterialsPage() {
           <button
             onClick={() => navigateToFolder(null)}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors flex-shrink-0 ${currentFolderId === null
-              ? isDark ? 'text-amber-400' : 'text-amber-600'
-              : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700'
+              ? isDark ? 'text-purple-400' : 'text-purple-600'
+              : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
               }`}
           >
             <FiHome className="w-4 h-4" />
@@ -595,12 +758,12 @@ export function MaterialsPage() {
 
           {breadcrumbs.map((folder, index) => (
             <React.Fragment key={folder.id}>
-              <FiChevronRight className={`flex-shrink-0 ${isDark ? 'text-stone-600' : 'text-stone-400'}`} />
+              <FiChevronRight className={`flex-shrink-0 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
               <button
                 onClick={() => navigateToFolder(folder.id)}
                 className={`px-2 py-1 rounded-lg transition-colors truncate max-w-[150px] ${index === breadcrumbs.length - 1
-                  ? isDark ? 'text-amber-400' : 'text-amber-600'
-                  : isDark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700'
+                  ? isDark ? 'text-purple-400' : 'text-purple-600'
+                  : isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 {folder.name}
@@ -611,9 +774,9 @@ export function MaterialsPage() {
 
         {/* Selection toolbar */}
         {selectedItems.size > 0 && (
-          <div className={`flex items-center justify-between p-3 mb-4 rounded-lg ${isDark ? 'bg-amber-900/30' : 'bg-amber-100'
+          <div className={`flex items-center justify-between p-3 mb-4 rounded-lg ${isDark ? 'bg-purple-900/30' : 'bg-purple-100'
             }`}>
-            <span className={isDark ? 'text-amber-400' : 'text-amber-700'}>
+            <span className={isDark ? 'text-purple-400' : 'text-purple-700'}>
               {selectedItems.size} item(s) selected
             </span>
             <div className="flex items-center gap-2">
@@ -639,7 +802,7 @@ export function MaterialsPage() {
 
         {/* Content */}
         {currentItems.length === 0 ? (
-          <div className={`text-center py-16 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+          <div className={`text-center py-16 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             {searchQuery ? (
               <>
                 <FiSearch className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -659,9 +822,9 @@ export function MaterialsPage() {
             {currentItems.map(renderItem)}
           </div>
         ) : (
-          <div className={`rounded-xl overflow-hidden ${isDark ? 'bg-stone-800/30' : 'bg-white shadow-sm'
+          <div className={`rounded-xl overflow-hidden ${isDark ? 'bg-gray-800/30' : 'bg-white shadow-sm'
             }`}>
-            <div className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 p-3 border-b text-sm font-medium ${isDark ? 'border-stone-700 text-stone-400' : 'border-stone-200 text-stone-500'
+            <div className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 p-3 border-b text-sm font-medium ${isDark ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-500'
               }`}>
               <span className="w-5"></span>
               <span></span>
@@ -670,7 +833,7 @@ export function MaterialsPage() {
               <span>Date</span>
               <span className="w-8"></span>
             </div>
-            <div className="divide-y divide-stone-200 dark:divide-stone-700">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {currentItems.map(renderItem)}
             </div>
           </div>
@@ -681,7 +844,7 @@ export function MaterialsPage() {
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-stone-300' : 'text-stone-700'
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                   Folder Name
                 </label>
@@ -693,7 +856,7 @@ export function MaterialsPage() {
                 />
               </div>
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-stone-300' : 'text-stone-700'
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                   Color
                 </label>
@@ -701,9 +864,10 @@ export function MaterialsPage() {
                   {FOLDER_COLORS.map(color => (
                     <button
                       key={color.value}
+                      type="button"
                       onClick={() => setNewFolderColor(color.value)}
                       className={`w-8 h-8 rounded-lg transition-transform ${newFolderColor === color.value ? 'ring-2 ring-offset-2 scale-110' : ''
-                        } ${isDark ? 'ring-offset-stone-900' : 'ring-offset-white'}`}
+                        } ${isDark ? 'ring-offset-gray-900' : 'ring-offset-white'}`}
                       style={{ backgroundColor: color.value }}
                       title={color.name}
                     />
@@ -722,76 +886,82 @@ export function MaterialsPage() {
           </ModalFooter>
         </Modal>
 
-        {/* Upload Modal */}
-        <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} size="md" title="Upload Files">
+        {/* Add Link Modal (replaces Upload Modal) */}
+        <Modal isOpen={isUploadModalOpen} onClose={() => { setIsUploadModalOpen(false); setNewLinkName(''); setNewLinkUrl(''); setNewLinkDescription(''); }} size="md" title="Add Resource Link">
           <ModalBody>
             <div className="space-y-4">
-              <div
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${isDark
-                  ? 'border-stone-700 hover:border-amber-600'
-                  : 'border-stone-300 hover:border-amber-400'
-                  }`}
-              >
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => setUploadFiles(Array.from(e.target.files || []))}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <FiUpload className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-stone-500' : 'text-stone-400'
-                    }`} />
-                  <p className={isDark ? 'text-stone-300' : 'text-stone-600'}>
-                    Click to select files or drag and drop
-                  </p>
-                  <p className={`text-sm mt-1 ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
-                    Maximum file size: 50MB
-                  </p>
-                </label>
+              {/* Info banner */}
+              <div className={`p-3 rounded-lg flex items-start gap-3 ${isDark ? 'bg-purple-900/30 text-purple-200' : 'bg-purple-50 text-purple-800'}`}>
+                <span className="text-xl">💡</span>
+                <p className="text-sm">
+                  Add links to Google Drive, Dropbox, or any file hosting service.
+                  Links will open in a new tab when clicked.
+                </p>
               </div>
 
-              {uploadFiles.length > 0 && (
-                <div className="space-y-2">
-                  <p className={`text-sm font-medium ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
-                    Selected files:
-                  </p>
-                  {uploadFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between p-2 rounded-lg ${isDark ? 'bg-stone-800' : 'bg-stone-100'
-                        }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FiFile className={`flex-shrink-0 ${isDark ? 'text-stone-400' : 'text-stone-500'}`} />
-                        <span className={`truncate ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
-                          {file.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
-                          {formatSize(file.size)}
-                        </span>
-                        <button
-                          onClick={() => setUploadFiles(uploadFiles.filter((_, i) => i !== index))}
-                          className={`p-1 rounded ${isDark ? 'hover:bg-stone-700 text-stone-400' : 'hover:bg-stone-200 text-stone-500'
-                            }`}
-                        >
-                          <FiX className="w-4 h-4" />
-                        </button>
-                      </div>
+              {/* Link Name */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Display Name *
+                </label>
+                <Input
+                  value={newLinkName}
+                  onChange={(e) => setNewLinkName(e.target.value)}
+                  placeholder="e.g., Calculus Lecture Notes.pdf"
+                  autoFocus
+                />
+              </div>
+
+              {/* Link URL */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Link URL *
+                </label>
+                <Input
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  placeholder="https://drive.google.com/file/..."
+                />
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                  Paste a Google Drive, Dropbox, or direct file link
+                </p>
+              </div>
+
+              {/* Description (optional) */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Description (optional)
+                </label>
+                <Input
+                  value={newLinkDescription}
+                  onChange={(e) => setNewLinkDescription(e.target.value)}
+                  placeholder="Brief description of this resource"
+                />
+              </div>
+
+              {/* Preview */}
+              {newLinkName && newLinkUrl && (
+                <div className={`p-3 rounded-lg border ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <p className={`text-xs font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Preview:</p>
+                  <div className="flex items-center gap-3">
+                    <FiFile className={`w-8 h-8 ${isDark ? 'text-purple-500' : 'text-purple-600'}`} />
+                    <div>
+                      <p className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{newLinkName}</p>
+                      {newLinkDescription && (
+                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{newLinkDescription}</p>
+                      )}
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" onClick={() => { setIsUploadModalOpen(false); setUploadFiles([]); }}>
+            <Button variant="ghost" onClick={() => { setIsUploadModalOpen(false); setNewLinkName(''); setNewLinkUrl(''); setNewLinkDescription(''); }}>
               Cancel
             </Button>
-            <Button onClick={handleUpload} disabled={uploadFiles.length === 0}>
-              Upload {uploadFiles.length > 0 ? `(${uploadFiles.length})` : ''}
+            <Button onClick={handleAddLink} disabled={!newLinkName.trim() || !newLinkUrl.trim()}>
+              Add Link
             </Button>
           </ModalFooter>
         </Modal>
@@ -801,7 +971,7 @@ export function MaterialsPage() {
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-stone-300' : 'text-stone-700'
+                <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                   Name
                 </label>
@@ -814,7 +984,7 @@ export function MaterialsPage() {
               </div>
               {editingItem?.type === 'folder' && (
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-stone-300' : 'text-stone-700'
+                  <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'
                     }`}>
                     Color
                   </label>
@@ -822,9 +992,10 @@ export function MaterialsPage() {
                     {FOLDER_COLORS.map(color => (
                       <button
                         key={color.value}
+                        type="button"
                         onClick={() => setNewFolderColor(color.value)}
                         className={`w-8 h-8 rounded-lg transition-transform ${newFolderColor === color.value ? 'ring-2 ring-offset-2 scale-110' : ''
-                          } ${isDark ? 'ring-offset-stone-900' : 'ring-offset-white'}`}
+                          } ${isDark ? 'ring-offset-gray-900' : 'ring-offset-white'}`}
                         style={{ backgroundColor: color.value }}
                         title={color.name}
                       />
@@ -847,7 +1018,7 @@ export function MaterialsPage() {
         {/* Delete Confirmation Modal */}
         <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} size="sm" title="Confirm Delete">
           <ModalBody>
-            <p className={isDark ? 'text-stone-300' : 'text-stone-600'}>
+            <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>
               Are you sure you want to delete {selectedItems.size} item(s)?
               {Array.from(selectedItems).some(id => items.find(i => i.id === id)?.type === 'folder') && (
                 <span className="block mt-2 text-sm text-red-500">
@@ -865,6 +1036,67 @@ export function MaterialsPage() {
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               Delete
+            </Button>
+          </ModalFooter>
+        </Modal>
+
+        {/* Copy/Move Modal */}
+        <Modal
+          isOpen={isMoveModalOpen}
+          onClose={() => { setIsMoveModalOpen(false); setMovingItem(null); }}
+          size="md"
+          title={isCopying ? 'Copy to Folder' : 'Move to Folder'}
+        >
+          <ModalBody>
+            <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              {isCopying ? 'Select a destination folder to copy' : 'Select a destination folder to move'}{' '}
+              <span className="font-medium">{movingItem?.name}</span>
+            </p>
+            <div className={`border rounded-lg max-h-64 overflow-y-auto ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              {/* Root folder option */}
+              <button
+                onClick={() => handleCopyMove(null)}
+                className={`w-full px-4 py-3 text-left flex items-center gap-3 ${isDark
+                  ? 'hover:bg-gray-700/50 border-b border-gray-700'
+                  : 'hover:bg-gray-50 border-b border-gray-100'
+                  }`}
+              >
+                <FiHome className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                  📁 Root (My Library)
+                </span>
+              </button>
+
+              {/* Available folders */}
+              {getAvailableFolders().length === 0 ? (
+                <div className={`px-4 py-6 text-center ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                  No other folders available
+                </div>
+              ) : (
+                getAvailableFolders().map(folder => (
+                  <button
+                    key={folder.id}
+                    onClick={() => handleCopyMove(folder.id)}
+                    className={`w-full px-4 py-3 text-left flex items-center gap-3 ${isDark
+                      ? 'hover:bg-gray-700/50 border-b border-gray-700 last:border-b-0'
+                      : 'hover:bg-gray-50 border-b border-gray-100 last:border-b-0'
+                      }`}
+                  >
+                    <IoFolder
+                      className="w-5 h-5 flex-shrink-0"
+                      style={{ color: folder.color || FOLDER_COLORS[0].value }}
+                    />
+                    <span className={isDark ? 'text-gray-200' : 'text-gray-700'}>
+                      {folder.name}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={() => { setIsMoveModalOpen(false); setMovingItem(null); }}>
+              Cancel
             </Button>
           </ModalFooter>
         </Modal>

@@ -10,7 +10,9 @@ import { Footer } from '@/components/Footer';
 import { WizardModal } from '@/components/ui/WizardModal';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { MagicalBackground } from '@/components/ui/MagicalBackground';
+import { Pagination, PageSizeSelector } from '@/components/ui/Pagination';
 import { usePeopleFilter } from '@/hooks/usePeopleFilter';
+import { usePagination } from '@/hooks';
 import { PEOPLE } from '@/data/people';
 import type { SortBy } from '@/types';
 
@@ -22,6 +24,15 @@ function AppContent() {
   const { activeModal, closeModal } = useModal();
 
   const filteredPeople = usePeopleFilter(PEOPLE, query, sortBy, houseFilter, bloodGroupFilter);
+
+  // Pagination
+  const pagination = usePagination({
+    totalItems: filteredPeople.length,
+    itemsPerPage: 12,
+    initialPage: 1,
+  });
+
+  const paginatedPeople = pagination.paginateItems(filteredPeople);
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-indigo-50/60 to-purple-100/40 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -78,11 +89,36 @@ function AppContent() {
           setHouseFilter={setHouseFilter}
           bloodGroupFilter={bloodGroupFilter}
           setBloodGroupFilter={setBloodGroupFilter}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          pageSize={pagination.pageSize}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          onPageSizeChange={pagination.setPageSize}
         />
 
         {/* Grid Section */}
         <div className="mx-auto max-w-5xl px-6">
-          <ProfileGrid people={filteredPeople} query={query} />
+          <ProfileGrid people={paginatedPeople} query={query} />
+
+          {/* Pagination Controls */}
+          {filteredPeople.length > 0 && (
+            <div className="mt-8 mb-6 space-y-4">
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={pagination.goToPage}
+                canGoNext={pagination.canGoNext}
+                canGoPrev={pagination.canGoPrev}
+              />
+              <div className="flex justify-center">
+                <PageSizeSelector
+                  pageSize={pagination.pageSize}
+                  onPageSizeChange={pagination.setPageSize}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

@@ -95,3 +95,7 @@ export function useMediaQuery(query: string): boolean {
 export function useIsTouchDevice(): boolean {
   return useMediaQuery('(hover: none) and (pointer: coarse)');
 }
+
+// Export pagination hook
+export { usePagination } from './usePagination';
+export type { UsePaginationOptions, PaginationResult } from './usePagination';

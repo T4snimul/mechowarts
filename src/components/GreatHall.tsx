@@ -10,6 +10,12 @@ interface GreatHallProps {
   setHouseFilter: (house: string) => void;
   bloodGroupFilter: string;
   setBloodGroupFilter: (bloodGroup: string) => void;
+  currentPage?: number;
+  totalPages?: number;
+  pageSize?: number;
+  startIndex?: number;
+  endIndex?: number;
+  onPageSizeChange?: (size: number) => void;
 }
 
 export function GreatHall({
@@ -21,6 +27,11 @@ export function GreatHall({
   setHouseFilter,
   bloodGroupFilter,
   setBloodGroupFilter,
+  currentPage,
+  totalPages,
+  pageSize,
+  startIndex,
+  endIndex,
 }: GreatHallProps) {
 
   const sortOptions = [
@@ -83,6 +94,11 @@ export function GreatHall({
             <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2 font-sans">
               {filteredCount !== totalCount ? `of ${totalCount} wizards` : 'wizards enrolled'}
             </span>
+            {currentPage && totalPages && startIndex !== undefined && endIndex !== undefined && filteredCount > 0 && (
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-3 font-sans">
+                (Showing {startIndex + 1}-{endIndex})
+              </span>
+            )}
           </div>
 
           {/* Controls Row */}

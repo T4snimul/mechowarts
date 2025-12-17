@@ -59,7 +59,7 @@ export function Pagination({
         disabled={!canGoPrev}
         className={cn(
           'px-3 py-2 rounded-lg font-medium transition-all duration-200 font-sans text-sm',
-          'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
+          'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
           'dark:focus:ring-offset-gray-900',
           canGoPrev
             ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
@@ -106,10 +106,10 @@ export function Pagination({
               onClick={() => onPageChange(pageNum)}
               className={cn(
                 'min-w-[2.5rem] px-3 py-2 rounded-lg font-medium transition-all duration-200 font-sans text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
+                'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
                 'dark:focus:ring-offset-gray-900',
                 isActive
-                  ? 'bg-amber-500 text-white shadow-md hover:bg-amber-600 border border-amber-500'
+                  ? 'bg-purple-600 text-white shadow-md hover:bg-purple-700 border border-purple-600'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
               )}
               aria-label={`Go to page ${pageNum}`}
@@ -127,7 +127,7 @@ export function Pagination({
         disabled={!canGoNext}
         className={cn(
           'px-3 py-2 rounded-lg font-medium transition-all duration-200 font-sans text-sm',
-          'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
+          'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
           'dark:focus:ring-offset-gray-900',
           canGoNext
             ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'

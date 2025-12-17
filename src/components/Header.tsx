@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { SettingsMenu } from '@/components/ui/SettingsMenu';
 import { AuthModal } from '@/components/AuthModal';
 import { UserMenu } from '@/components/UserMenu';
@@ -20,6 +21,7 @@ export function Header({
   const [searchFocused, setSearchFocused] = useState(false);
   const { toggleTheme } = useTheme();
   const { isAuthenticated } = useAuth();
+  const { enableBackgroundEffects, setEnableBackgroundEffects } = useSettings();
 
   useEffect(() => {
     const scroller = document.getElementById("main-content") || window;
@@ -41,13 +43,13 @@ export function Header({
     >
       <div
         className={[
-          "relative mx-auto max-w-5xl px-8 py-4",
+          "relative mx-auto max-w-5xl px-4 sm:px-6 md:px-8 py-3",
           // glass bar with rounded corners
-          "backdrop-blur-md rounded-2xl",
+          "backdrop-blur-md rounded-xl",
           // border + lift on scroll
           scrolled
-            ? "bg-white/80 dark:bg-gray-900/90 ring-1 ring-gray-200/50 dark:ring-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
-            : "bg-white/60 dark:bg-gray-900/80",
+            ? "bg-white/80 dark:bg-gray-900/90 ring-1 ring-purple-200/50 dark:ring-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
+            : "bg-white/60 dark:bg-gray-900/80 ring-1 ring-purple-200/40 dark:ring-purple-500/20",
           "transition-all duration-300",
         ].join(" ")}
       >
@@ -65,21 +67,31 @@ export function Header({
         </div>
 
         {/* Content */}
-        <div className="relative flex items-center justify-between gap-4 py-1">
-          {/* Logo */}
-          <div className="h-8 w-36 overflow-hidden flex-shrink-0">
-            <img
-              src="/logo-full.png"
-              alt="MechoWarts School of Witchcraft and Wizardry - Navigate to home"
-              className="block h-full w-full object-cover object-center dark:invert-[.9] dark:brightness-90 dark:contrast-75"
-              role="img"
-            />
+        <div className="relative flex flex-wrap items-center justify-between gap-3 md:gap-4 py-1">
+          {/* Logo + section tag */}
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-[10rem]">
+            <a
+              href="/"
+              className="group h-9 w-36 md:w-40 overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+              aria-label="Go to home"
+            >
+              <img
+                src="/logo-full.png"
+                alt="MechoWarts School of Witchcraft and Wizardry"
+                className="block h-full w-full object-cover object-center transition duration-200 group-hover:scale-[1.02] dark:invert-[.9] dark:brightness-90 dark:contrast-75"
+                role="img"
+              />
+            </a>
+            <span className="hidden sm:inline-flex items-center gap-2 rounded-full bg-purple-100/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-purple-800 shadow-sm ring-1 ring-purple-200/70 dark:bg-purple-900/50 dark:text-purple-100 dark:ring-purple-800/60">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+              Great Hall
+            </span>
           </div>
 
           {/* Search + Theme */}
-          <div className="flex items-center justify-end gap-3 flex-1">
+          <div className="flex items-center justify-end gap-2 md:gap-3 flex-1 flex-wrap">
             {/* Search */}
-            <div className={`relative transition-all duration-300 ${searchFocused ? 'flex-1' : 'w-full max-w-sm'}`}>
+            <div className={`relative transition-all duration-300 flex-1 min-w-[220px] max-w-full md:max-w-sm ${searchFocused ? '' : ''}`}>
               <label htmlFor="search" className="sr-only">
                 Search members
               </label>
@@ -136,6 +148,24 @@ export function Header({
             <div className={`flex items-center gap-2 transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
               <SettingsMenu />
 
+              {/* Quick background effects toggle */}
+              <button
+                onClick={() => setEnableBackgroundEffects(!enableBackgroundEffects)}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-gray-300/70 bg-white/85 text-sm font-medium shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900 ${enableBackgroundEffects ? 'ring-1 ring-purple-400/60 dark:ring-purple-300/40' : ''}`}
+                title="Toggle magical background"
+                aria-label="Toggle magical background effects"
+                aria-pressed={enableBackgroundEffects}
+              >
+                <svg
+                  className={`h-5 w-5 ${enableBackgroundEffects ? 'text-purple-500' : 'text-white'}`}
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2.2 14.7 8l5.8.8-4.3 4.1 1 6-5.2-3-5.2 3 1-6L3.5 8.8 9.3 8l2.7-5.8Z" />
+                </svg>
+              </button>
+
               <button
                 onClick={toggleTheme}
                 className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
@@ -172,6 +202,7 @@ export function Header({
               ) : (
                 <Button
                   onClick={() => setAuthModalOpen(true)}
+                  variant="outline"
                   className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
                            hover:bg-white active:scale-95
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
@@ -179,7 +210,7 @@ export function Header({
                   size="sm"
                 >
                   <svg
-                    className="h-5 w-5"
+                    className="h-5 w-5 text-gray-700 dark:text-gray-100"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                     aria-hidden="true"

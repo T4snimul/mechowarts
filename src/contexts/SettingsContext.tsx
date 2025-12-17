@@ -33,7 +33,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   const [enableBackgroundEffects, setEnableBackgroundEffects] = useState(() => {
     const saved = localStorage.getItem('mechowarts-background-effects');
-    return saved ? JSON.parse(saved) : true;
+    // Default to enabled for new visitors; only honor explicit stored values
+    return saved !== null ? JSON.parse(saved) : true;
   });
 
   const [reducedMotion, setReducedMotion] = useState(() => {

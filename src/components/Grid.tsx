@@ -7,9 +7,10 @@ import { useSettings } from '@/contexts/SettingsContext';
 
 interface EmptyStateProps {
   query?: string;
+  onResetFilters?: () => void;
 }
 
-function EmptyState({ query }: EmptyStateProps) {
+function EmptyState({ query, onResetFilters }: EmptyStateProps) {
   return (
     <div className="flex h-[70vh] flex-col items-center justify-center text-center px-6">
       {/* Orb with sparkles */}
@@ -46,6 +47,17 @@ function EmptyState({ query }: EmptyStateProps) {
           : 'The Marauder\'s Map is empty. Add some magical folk to see them here!'
         }
       </p>
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        {onResetFilters && (
+          <button
+            onClick={onResetFilters}
+            className="inline-flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+          >
+            Reset filters
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -83,6 +95,8 @@ interface ProfileGridProps extends GridProps {
   query?: string;
   className?: string;
   isLoading?: boolean;
+  onResetFilters?: () => void;
+  onOpenPerson?: (person: GridProps['people'][0]) => void;
 }
 
 function LoadingGrid() {
@@ -93,7 +107,7 @@ function LoadingGrid() {
   );
 }
 
-export function ProfileGrid({ people, query, className, isLoading = false }: ProfileGridProps) {
+export function ProfileGrid({ people, query, className, isLoading = false, onResetFilters, onOpenPerson }: ProfileGridProps) {
   const { cardSize } = useSettings();
 
   if (isLoading) {
@@ -101,7 +115,7 @@ export function ProfileGrid({ people, query, className, isLoading = false }: Pro
   }
 
   if (people.length === 0) {
-    return <EmptyState query={query} />;
+    return <EmptyState query={query} onResetFilters={onResetFilters} />;
   }
 
   // Get container classes based on card size
@@ -122,7 +136,7 @@ export function ProfileGrid({ people, query, className, isLoading = false }: Pro
     <GridLayout className={className}>
       {people.map((person, index) => (
         <div key={person.id} className={getCardContainerClasses()}>
-          <ProfileCard person={person} index={index} />
+          <ProfileCard person={person} index={index} onOpenPerson={onOpenPerson} />
         </div>
       ))}
     </GridLayout>

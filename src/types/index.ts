@@ -46,6 +46,7 @@ export interface SortSelectProps {
 export interface ProfileCardProps {
   person: Person;
   index: number;
+  onOpenPerson?: (person: Person) => void;
 }
 
 export interface GridProps {

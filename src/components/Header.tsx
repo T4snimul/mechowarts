@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { SettingsMenu } from '@/components/ui/SettingsMenu';
+import { AuthModal } from '@/components/AuthModal';
+import { UserMenu } from '@/components/UserMenu';
+import { Button } from '@/components/ui/Button';
 
 interface HeaderProps {
   query: string;
@@ -12,7 +16,10 @@ export function Header({
   setQuery,
 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const { toggleTheme } = useTheme();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const scroller = document.getElementById("main-content") || window;
@@ -70,9 +77,9 @@ export function Header({
           </div>
 
           {/* Search + Theme */}
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-3 flex-1">
             {/* Search */}
-            <div className="relative w-full max-w-sm">
+            <div className={`relative transition-all duration-300 ${searchFocused ? 'flex-1' : 'w-full max-w-sm'}`}>
               <label htmlFor="search" className="sr-only">
                 Search members
               </label>
@@ -80,6 +87,8 @@ export function Header({
                 id="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 placeholder="Search name, roll, blood, hometown, phone..."
                 className="w-full rounded-2xl border border-gray-300/70 bg-white/90 px-4 py-2 pl-11 pr-10 text-sm shadow-sm text-gray-900 placeholder-gray-500
                            focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white
@@ -124,7 +133,7 @@ export function Header({
             </div>
 
             {/* Theme toggle and Settings */}
-            <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-2 transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
               <SettingsMenu />
 
               <button
@@ -133,33 +142,60 @@ export function Header({
                            hover:bg-white active:scale-95
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
                          dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
-              title="Toggle theme"
-              aria-label="Toggle theme"
-            >
-              {/* moon/sun as vectors for crispness */}
-              <svg
-                className="dark:hidden h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
+                title="Toggle theme"
+                aria-label="Toggle theme"
               >
-                {/* moon */}
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-              <svg
-                className="hidden dark:block h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                {/* sun */}
-                <path d="M6.76 4.84 5.34 3.42 3.92 4.84l1.42 1.42 1.42-1.42zm10.48 0 1.42-1.42 1.42 1.42-1.42 1.42-1.42-1.42zM12 2h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm9-6h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm1.76 7.16-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM20.66 18.58l-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z" />
-              </svg>
-            </button>
+                {/* moon/sun as vectors for crispness */}
+                <svg
+                  className="dark:hidden h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  {/* moon */}
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                <svg
+                  className="hidden dark:block h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  {/* sun */}
+                  <path d="M6.76 4.84 5.34 3.42 3.92 4.84l1.42 1.42 1.42-1.42zm10.48 0 1.42-1.42 1.42 1.42-1.42 1.42-1.42-1.42zM12 2h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm9-6h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm1.76 7.16-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM20.66 18.58l-1.42 1.42-1.42-1.42 1.42-1.42 1.42 1.42zM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z" />
+                </svg>
+              </button>
+
+              {/* Auth buttons */}
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <Button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="ml-1 inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100
+                           hover:bg-white active:scale-95
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+                         dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
+                  size="sm"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    {/* profile */}
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </header>
   );
 }

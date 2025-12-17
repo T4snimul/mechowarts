@@ -99,3 +99,6 @@ export function useIsTouchDevice(): boolean {
 // Export pagination hook
 export { usePagination } from './usePagination';
 export type { UsePaginationOptions, PaginationResult } from './usePagination';
+
+// Export auth validation hook
+export { useAuthValidation } from './useAuthValidation';

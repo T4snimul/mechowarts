@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AppProvider } from '@/contexts/AppContext';
 import { ModalProvider, useModal } from '@/contexts/ModalContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { GreatHall } from '@/components/GreatHall';
 import { ProfileGrid } from '@/components/Grid';
@@ -13,6 +14,8 @@ import { MagicalBackground } from '@/components/ui/MagicalBackground';
 import { Pagination, PageSizeSelector } from '@/components/ui/Pagination';
 import { usePeopleFilter } from '@/hooks/usePeopleFilter';
 import { usePagination } from '@/hooks';
+import { usePeopleFromAPI } from '@/hooks/usePeopleFromAPI';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PEOPLE } from '@/data/people';
 import type { SortBy } from '@/types';
 
@@ -22,8 +25,16 @@ function AppContent() {
   const [houseFilter, setHouseFilter] = useState('');
   const [bloodGroupFilter, setBloodGroupFilter] = useState('');
   const { activeModal, closeModal } = useModal();
+  const { isLoading: authLoading } = useAuth();
 
-  const filteredPeople = usePeopleFilter(PEOPLE, query, sortBy, houseFilter, bloodGroupFilter);
+  // Fetch people from API, fallback to dummy data
+  const { people: apiPeople, isLoading: apiLoading, error: apiError } = usePeopleFromAPI();
+
+  // Use API data if available, otherwise fallback to dummy data
+  const people = apiPeople.length > 0 ? apiPeople : PEOPLE;
+  const isLoading = authLoading || apiLoading;
+
+  const filteredPeople = usePeopleFilter(people, query, sortBy, houseFilter, bloodGroupFilter);
 
   // Pagination
   const pagination = usePagination({
@@ -79,47 +90,69 @@ function AppContent() {
         id="main-content"
         className="scroll-hidden flex-1 min-h-0 overflow-y-auto pt-24 pb-12"
       >
-        {/* The Great Hall Section */}
-        <GreatHall
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          totalCount={PEOPLE.length}
-          filteredCount={filteredPeople.length}
-          houseFilter={houseFilter}
-          setHouseFilter={setHouseFilter}
-          bloodGroupFilter={bloodGroupFilter}
-          setBloodGroupFilter={setBloodGroupFilter}
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          pageSize={pagination.pageSize}
-          startIndex={pagination.startIndex}
-          endIndex={pagination.endIndex}
-          onPageSizeChange={pagination.setPageSize}
-        />
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-12">
+            <LoadingSpinner />
+          </div>
+        )}
 
-        {/* Grid Section */}
-        <div className="mx-auto max-w-5xl px-6">
-          <ProfileGrid people={paginatedPeople} query={query} />
-
-          {/* Pagination Controls */}
-          {filteredPeople.length > 0 && (
-            <div className="mt-8 mb-6 space-y-4">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={pagination.goToPage}
-                canGoNext={pagination.canGoNext}
-                canGoPrev={pagination.canGoPrev}
-              />
-              <div className="flex justify-center">
-                <PageSizeSelector
-                  pageSize={pagination.pageSize}
-                  onPageSizeChange={pagination.setPageSize}
-                />
-              </div>
+        {/* Error state */}
+        {apiError && !isLoading && (
+          <div className="mx-auto max-w-5xl px-6 py-8">
+            <div className="p-4 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded text-amber-800 dark:text-amber-200">
+              <p className="font-semibold">⚠ Unable to load from server</p>
+              <p className="text-sm mt-1">Using cached data. Connect to the backend server for live data.</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Main content when not loading */}
+        {!isLoading && (
+          <>
+            {/* The Great Hall Section */}
+            <GreatHall
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              totalCount={people.length}
+              filteredCount={filteredPeople.length}
+              houseFilter={houseFilter}
+              setHouseFilter={setHouseFilter}
+              bloodGroupFilter={bloodGroupFilter}
+              setBloodGroupFilter={setBloodGroupFilter}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              pageSize={pagination.pageSize}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageSizeChange={pagination.setPageSize}
+            />
+
+            {/* Grid Section */}
+            <div className="mx-auto max-w-5xl px-6">
+              <ProfileGrid people={paginatedPeople} query={query} />
+
+              {/* Pagination Controls */}
+              {filteredPeople.length > 0 && (
+                <div className="mt-8 mb-6 space-y-4">
+                  <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={pagination.goToPage}
+                    canGoNext={pagination.canGoNext}
+                    canGoPrev={pagination.canGoPrev}
+                  />
+                  <div className="flex justify-center">
+                    <PageSizeSelector
+                      pageSize={pagination.pageSize}
+                      onPageSizeChange={pagination.setPageSize}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </main>
 
       {/* Footer */}
@@ -142,11 +175,13 @@ export default function App() {
   return (
     <ThemeProvider>
       <SettingsProvider>
-        <AppProvider initialPeople={PEOPLE}>
-          <ModalProvider>
-            <AppContent />
-          </ModalProvider>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider initialPeople={PEOPLE}>
+            <ModalProvider>
+              <AppContent />
+            </ModalProvider>
+          </AppProvider>
+        </AuthProvider>
       </SettingsProvider>
     </ThemeProvider>
   );

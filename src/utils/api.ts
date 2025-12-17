@@ -137,6 +137,18 @@ export const peopleApi = {
   },
 
   /**
+   * Create the current user's profile
+   */
+  async createMyProfile(data: Partial<Person>): Promise<PersonApiResponse> {
+    try {
+      const response = await api.post<PersonApiResponse>('/people/me', data);
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
+    }
+  },
+
+  /**
    * Update the current user's profile
    */
   async updateMyProfile(data: Partial<Person>): Promise<PersonApiResponse> {

@@ -3,33 +3,60 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { MagicalBackground } from '@/components/ui/MagicalBackground';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { usePeopleFromAPI } from '@/hooks/usePeopleFromAPI';
 
 export function LandingPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [query, setQuery] = useState('');
+  const { people } = usePeopleFromAPI();
+
+  // Calculate dynamic stats
+  const stats = useMemo(() => {
+    const uniqueHouses = new Set(people.map(p => p.house)).size;
+    return {
+      houses: uniqueHouses || 4,
+      students: people.length || 0,
+    };
+  }, [people]);
 
   const features = [
     {
       icon: '🎓',
       title: 'Student Directory',
       description: 'Explore profiles of Mechatronics Engineering students sorted into Hogwarts houses.',
+      link: '/greathall',
     },
     {
       icon: '🏰',
-      title: 'Great Hall',
-      description: 'Visit the Great Hall to discover students by house, blood group, and academic achievements.',
+      title: 'Great Hall Chat',
+      description: 'Join the common room and chat with all wizards in real-time group conversations.',
+      link: '/owlery',
     },
     {
       icon: '🦉',
       title: 'Owlery',
-      description: 'Send messages to fellow students through our magical messaging system.',
+      description: 'Send private messages to fellow students through our magical messaging system.',
+      link: '/owlery',
+    },
+    {
+      icon: '📚',
+      title: 'Library of Magic',
+      description: 'Share and discover study materials, notes, assignments, and resources.',
+      link: '/materials',
+    },
+    {
+      icon: '🍅',
+      title: 'Pomodoro Timer',
+      description: 'Focus on your studies with magical timed sessions and track your productivity.',
+      link: '/pomodoro',
     },
     {
       icon: '⚡',
       title: 'Detailed Profiles',
       description: 'View comprehensive profiles with academic records, projects, skills, and magical properties.',
+      link: '/greathall',
     },
   ];
 
@@ -89,11 +116,12 @@ export function LandingPage() {
             Magical Features
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200 dark:border-gray-700"
+                onClick={() => feature.link && navigate(feature.link)}
+                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200 dark:border-gray-700 cursor-pointer"
               >
                 <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
@@ -104,6 +132,9 @@ export function LandingPage() {
                 <p className="text-gray-600 dark:text-gray-300">
                   {feature.description}
                 </p>
+                <div className="mt-4 text-indigo-600 dark:text-indigo-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  Explore →
+                </div>
               </div>
             ))}
           </div>
@@ -111,22 +142,26 @@ export function LandingPage() {
 
         {/* Stats Section */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">4</div>
+              <div className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">{stats.houses}</div>
               <div className="text-gray-600 dark:text-gray-400">Hogwarts Houses</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">100+</div>
-              <div className="text-gray-600 dark:text-gray-400">Students</div>
+              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">{stats.students || '100+'}</div>
+              <div className="text-gray-600 dark:text-gray-400">Wizards</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-amber-600 dark:text-amber-400">∞</div>
-              <div className="text-gray-600 dark:text-gray-400">Possibilities</div>
+              <div className="text-4xl font-bold text-amber-600 dark:text-amber-400">🏰</div>
+              <div className="text-gray-600 dark:text-gray-400">Group Chat</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400">1</div>
-              <div className="text-gray-600 dark:text-gray-400">Amazing Journey</div>
+              <div className="text-4xl font-bold text-green-600 dark:text-green-400">📚</div>
+              <div className="text-gray-600 dark:text-gray-400">Study Materials</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-red-600 dark:text-red-400">🍅</div>
+              <div className="text-gray-600 dark:text-gray-400">Pomodoro Timer</div>
             </div>
           </div>
         </div>

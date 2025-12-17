@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { usePeopleFromAPI } from '@/hooks/usePeopleFromAPI';
 import io, { Socket } from 'socket.io-client';
 
 interface Message {
@@ -11,6 +12,7 @@ interface Message {
   senderAvatar?: string;
   text: string;
   timestamp: Date;
+  isGroupMessage?: boolean;
 }
 
 interface User {
@@ -21,20 +23,42 @@ interface User {
   online: boolean;
 }
 
+type ChatMode = 'direct' | 'group';
+
 export function OwleryPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { people } = usePeopleFromAPI();
   const navigate = useNavigate();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [groupMessages, setGroupMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [chatMode, setChatMode] = useState<ChatMode>('group');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Convert people to User format and merge with online status
+  const allUsers: User[] = people.map(p => ({
+    id: p.id || p.roll,
+    name: p.name,
+    roll: p.roll,
+    avatar: p.avatar,
+    online: onlineUsers.some(ou => ou.id === p.id || ou.roll === p.roll),
+  })).filter(u => u.id !== user?.id && u.roll !== user?.roll);
+
+  // Sort: online users first, then alphabetically
+  const sortedUsers = [...allUsers].sort((a, b) => {
+    if (a.online && !b.online) return -1;
+    if (!a.online && b.online) return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, groupMessages]);
 
   // Socket.IO connection
   useEffect(() => {
@@ -47,6 +71,8 @@ export function OwleryPage() {
 
     newSocket.on('connect', () => {
       console.log('Connected to Owlery');
+      // Join global chat room
+      newSocket.emit('join-group', { userId: user.id, userName: user.name });
     });
 
     newSocket.on('online-users', (users: User[]) => {
@@ -54,11 +80,19 @@ export function OwleryPage() {
     });
 
     newSocket.on('new-message', (message: Message) => {
-      setMessages(prev => [...prev, message]);
+      if (message.isGroupMessage) {
+        setGroupMessages(prev => [...prev, message]);
+      } else {
+        setMessages(prev => [...prev, message]);
+      }
     });
 
     newSocket.on('message-history', (history: Message[]) => {
       setMessages(history);
+    });
+
+    newSocket.on('group-message-history', (history: Message[]) => {
+      setGroupMessages(history);
     });
 
     setSocket(newSocket);
@@ -70,14 +104,21 @@ export function OwleryPage() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !socket || !selectedUser) return;
+    if (!inputMessage.trim() || !socket) return;
 
-    const message = {
-      to: selectedUser.id,
-      text: inputMessage,
-    };
-
-    socket.emit('send-message', message);
+    if (chatMode === 'group') {
+      socket.emit('send-group-message', {
+        text: inputMessage,
+        userId: user?.id,
+        userName: user?.name,
+        userAvatar: user?.avatar,
+      });
+    } else if (selectedUser) {
+      socket.emit('send-message', {
+        to: selectedUser.id,
+        text: inputMessage,
+      });
+    }
     setInputMessage('');
   };
 
@@ -107,17 +148,34 @@ export function OwleryPage() {
     );
   }
 
+  const currentMessages = chatMode === 'group' ? groupMessages : messages;
+
   return (
     <div className="h-screen flex bg-gray-900 text-white overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - User List */}
-      <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
+      <div className={`
+        fixed lg:relative inset-y-0 left-0 z-50 w-80 bg-gray-800 border-r border-gray-700 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/greathall')}
+              onClick={() => {
+                setSidebarOpen(false);
+                navigate(-1);
+              }}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title="Back to Great Hall"
+              title="Go Back"
             >
               ←
             </button>
@@ -128,6 +186,41 @@ export function OwleryPage() {
               <p className="text-xs text-gray-400">Magical Messenger</p>
             </div>
           </div>
+          {/* Mobile close button */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Chat Mode Toggle */}
+        <div className="p-3 border-b border-gray-700">
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setChatMode('group');
+                setSelectedUser(null);
+                setSidebarOpen(false);
+              }}
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${chatMode === 'group'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+            >
+              🏰 Great Hall
+            </button>
+            <button
+              onClick={() => setChatMode('direct')}
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${chatMode === 'direct'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+            >
+              📨 DMs
+            </button>
+          </div>
         </div>
 
         {/* Current User Profile */}
@@ -135,7 +228,7 @@ export function OwleryPage() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <img
-                src={user?.avatar || '/default-avatar.png'}
+                src={user?.avatar || '/default-avatar.svg'}
                 alt={user?.name}
                 className="w-12 h-12 rounded-full border-2 border-green-500"
               />
@@ -148,42 +241,53 @@ export function OwleryPage() {
           </div>
         </div>
 
-        {/* Online Users List */}
+        {/* Users List */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-2">
             <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Online Wizards ({onlineUsers.length})
+              All Wizards ({sortedUsers.length}) • {onlineUsers.length} Online
             </p>
 
-            {onlineUsers.length === 0 ? (
+            {sortedUsers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p className="text-4xl mb-2">🦉</p>
-                <p className="text-sm">No owls in sight...</p>
-                <p className="text-xs mt-1">Waiting for other students</p>
+                <p className="text-sm">No other wizards yet...</p>
               </div>
             ) : (
               <div className="space-y-1">
-                {onlineUsers.map(onlineUser => (
+                {sortedUsers.map(listUser => (
                   <button
-                    key={onlineUser.id}
-                    onClick={() => setSelectedUser(onlineUser)}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${selectedUser?.id === onlineUser.id
-                      ? 'bg-indigo-600'
-                      : 'hover:bg-gray-700'
+                    key={listUser.id}
+                    onClick={() => {
+                      setSelectedUser(listUser);
+                      setChatMode('direct');
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full p-3 rounded-lg text-left transition-colors ${selectedUser?.id === listUser.id && chatMode === 'direct'
+                        ? 'bg-indigo-600'
+                        : 'hover:bg-gray-700'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <img
-                          src={onlineUser.avatar || '/default-avatar.png'}
-                          alt={onlineUser.name}
+                          src={listUser.avatar || '/default-avatar.svg'}
+                          alt={listUser.name}
                           className="w-10 h-10 rounded-full"
                         />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800" />
+                        <div
+                          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800 ${listUser.online ? 'bg-green-500' : 'bg-gray-500'
+                            }`}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{onlineUser.name}</p>
-                        <p className="text-xs text-gray-400">Roll: {onlineUser.roll}</p>
+                        <p className="font-medium truncate">{listUser.name}</p>
+                        <p className="text-xs text-gray-400">
+                          Roll: {listUser.roll}
+                          {listUser.online && (
+                            <span className="ml-2 text-green-400">● Online</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -195,32 +299,142 @@ export function OwleryPage() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {!selectedUser ? (
-          /* No chat selected */
-          <div className="flex-1 flex items-center justify-center bg-gray-900">
-            <div className="text-center">
-              <div className="text-8xl mb-4">🦉</div>
-              <h2 className="text-2xl font-bold text-gray-300 mb-2">Welcome to the Owlery</h2>
-              <p className="text-gray-500">Select a wizard from the sidebar to start sending messages</p>
+      <div className="flex-1 flex flex-col min-w-0">
+        {chatMode === 'group' ? (
+          <>
+            {/* Group Chat Header */}
+            <div className="p-4 border-b border-gray-700 bg-gray-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {/* Mobile menu button */}
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl">
+                  🏰
+                </div>
+                <div>
+                  <p className="font-semibold">Great Hall Chat</p>
+                  <p className="text-xs text-green-400">
+                    {onlineUsers.length + 1} wizards online
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Group Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
+              {currentMessages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center text-gray-500">
+                    <p className="text-6xl mb-4">🏰</p>
+                    <p className="text-lg font-medium">Welcome to the Great Hall!</p>
+                    <p className="text-sm mt-2">Start a conversation with all wizards</p>
+                  </div>
+                </div>
+              ) : (
+                currentMessages.map(message => {
+                  const isOwn = message.senderId === user?.id;
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`flex gap-2 max-w-md ${isOwn ? 'flex-row-reverse' : ''}`}>
+                        <img
+                          src={message.senderAvatar || '/default-avatar.svg'}
+                          alt={message.senderName}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div>
+                          {!isOwn && (
+                            <p className="text-xs text-gray-400 mb-1">{message.senderName}</p>
+                          )}
+                          <div
+                            className={`px-4 py-2 rounded-2xl ${isOwn
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-gray-700 text-white'
+                              }`}
+                          >
+                            <p className="break-words">{message.text}</p>
+                          </div>
+                          <p className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : ''}`}>
+                            {new Date(message.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </>
+        ) : !selectedUser ? (
+          /* No DM selected */
+          <div className="flex-1 flex flex-col bg-gray-900">
+            {/* Mobile header */}
+            <div className="lg:hidden p-4 border-b border-gray-700 bg-gray-800">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center px-4">
+                <div className="text-8xl mb-4">📨</div>
+                <h2 className="text-2xl font-bold text-gray-300 mb-2">Direct Messages</h2>
+                <p className="text-gray-500">Select a wizard from the sidebar to start a private chat</p>
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden mt-4 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors font-medium"
+                >
+                  Open Sidebar
+                </button>
+              </div>
             </div>
           </div>
         ) : (
           <>
-            {/* Chat Header */}
+            {/* DM Chat Header */}
             <div className="p-4 border-b border-gray-700 bg-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
+                {/* Mobile menu button */}
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
                 <div className="relative">
                   <img
-                    src={selectedUser.avatar || '/default-avatar.png'}
+                    src={selectedUser.avatar || '/default-avatar.svg'}
                     alt={selectedUser.name}
                     className="w-10 h-10 rounded-full"
                   />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800" />
+                  <div
+                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800 ${selectedUser.online ? 'bg-green-500' : 'bg-gray-500'
+                      }`}
+                  />
                 </div>
                 <div>
                   <p className="font-semibold">{selectedUser.name}</p>
-                  <p className="text-xs text-green-400">● Online</p>
+                  <p className={`text-xs ${selectedUser.online ? 'text-green-400' : 'text-gray-500'}`}>
+                    {selectedUser.online ? '● Online' : '○ Offline'}
+                  </p>
                 </div>
               </div>
               <button
@@ -231,9 +445,9 @@ export function OwleryPage() {
               </button>
             </div>
 
-            {/* Messages Area */}
+            {/* DM Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
-              {messages.length === 0 ? (
+              {currentMessages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center text-gray-500">
                     <p className="text-4xl mb-2">📜</p>
@@ -241,7 +455,7 @@ export function OwleryPage() {
                   </div>
                 </div>
               ) : (
-                messages.map(message => {
+                currentMessages.map(message => {
                   const isOwn = message.senderId === user?.id;
                   return (
                     <div
@@ -250,21 +464,24 @@ export function OwleryPage() {
                     >
                       <div className={`flex gap-2 max-w-md ${isOwn ? 'flex-row-reverse' : ''}`}>
                         <img
-                          src={message.senderAvatar || '/default-avatar.png'}
+                          src={message.senderAvatar || '/default-avatar.svg'}
                           alt={message.senderName}
                           className="w-8 h-8 rounded-full"
                         />
                         <div>
                           <div
                             className={`px-4 py-2 rounded-2xl ${isOwn
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-700 text-white'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-gray-700 text-white'
                               }`}
                           >
                             <p className="break-words">{message.text}</p>
                           </div>
                           <p className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : ''}`}>
-                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(message.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </p>
                         </div>
                       </div>
@@ -274,27 +491,33 @@ export function OwleryPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700 bg-gray-800">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button
-                  type="submit"
-                  disabled={!inputMessage.trim()}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
-                >
-                  Send 🦉
-                </button>
-              </div>
-            </form>
           </>
+        )}
+
+        {/* Message Input - Show for group or when user selected */}
+        {(chatMode === 'group' || selectedUser) && (
+          <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700 bg-gray-800">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder={
+                  chatMode === 'group'
+                    ? 'Send a message to the Great Hall...'
+                    : `Send a message to ${selectedUser?.name}...`
+                }
+                className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="submit"
+                disabled={!inputMessage.trim()}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              >
+                Send 🦉
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

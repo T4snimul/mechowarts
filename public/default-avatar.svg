@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background gradient with magical purple tones -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6B46C1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#805AD5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hatGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D3748;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A202C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Circular background -->
+  <circle cx="100" cy="100" r="100" fill="url(#bgGradient)"/>
+
+  <!-- Sparkle decorations -->
+  <circle cx="30" cy="40" r="2" fill="#F6E05E" opacity="0.8"/>
+  <circle cx="170" cy="60" r="3" fill="#F6E05E" opacity="0.9"/>
+  <circle cx="25" cy="150" r="2" fill="#F6E05E" opacity="0.7"/>
+  <circle cx="175" cy="140" r="2" fill="#F6E05E" opacity="0.8"/>
+
+  <!-- Head/face area -->
+  <circle cx="100" cy="115" r="45" fill="#E2D4F0"/>
+
+  <!-- Simple face features -->
+  <circle cx="85" cy="108" r="5" fill="#4A5568"/>
+  <circle cx="115" cy="108" r="5" fill="#4A5568"/>
+  <path d="M90 125 Q100 132 110 125" stroke="#4A5568" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Wizard hat -->
+  <path d="M45 95 L100 25 L155 95 Z" fill="url(#hatGradient)"/>
+  <ellipse cx="100" cy="95" rx="55" ry="12" fill="#2D3748"/>
+
+  <!-- Hat band -->
+  <rect x="45" y="88" width="110" height="8" fill="#805AD5"/>
+
+  <!-- Star on hat -->
+  <polygon points="100,40 103,50 113,50 105,57 108,67 100,61 92,67 95,57 87,50 97,50" fill="#F6E05E"/>
+
+  <!-- Body/robe suggestion -->
+  <ellipse cx="100" cy="190" rx="50" ry="30" fill="#2D3748"/>
+</svg>

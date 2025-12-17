@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/Button';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 interface HeaderProps {
   query: string;
@@ -20,7 +21,7 @@ export function Header({
   const [searchFocused, setSearchFocused] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
-  const { toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, user, logout } = useAuth();
   const {
     enableAnimations,
@@ -37,7 +38,7 @@ export function Header({
   const location = useLocation();
 
   const navLinkClass = (path: string) => [
-    "px-3 py-1.5 rounded-xl text-sm font-medium transition",
+    "px-3 py-1.5 rounded-xl text-sm font-medium transition whitespace-nowrap",
     location.pathname === path
       ? "bg-purple-100/70 text-purple-800 ring-1 ring-purple-200/80 dark:bg-purple-900/40 dark:text-purple-100 dark:ring-purple-800/60"
       : "text-gray-700 hover:bg-gray-100/70 dark:text-gray-300 dark:hover:bg-gray-800/70",
@@ -81,6 +82,34 @@ export function Header({
     };
   }, []);
 
+  // Theme toggle button component
+  const ThemeToggleButton = ({ className = "" }: { className?: string }) => (
+    <button
+      onClick={toggleTheme}
+      className={`inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-300/70 bg-white/90 text-gray-800 shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900 ${className}`}
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+    >
+      {theme === 'dark' ? (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      ) : (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      )}
+    </button>
+  );
+
   const renderMenuContent = (closeMenu: () => void, positionClass = "right-0") => (
     <div className={`absolute ${positionClass} mt-2 w-64 rounded-xl bg-white/95 dark:bg-gray-900/95 shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-md z-50`}>
       <div className="px-4 py-3 border-b border-gray-200/70 dark:border-gray-700/50">
@@ -95,25 +124,6 @@ export function Header({
       </div>
 
       <div className="p-3 space-y-2">
-        <button
-          onClick={() => {
-            toggleTheme();
-            closeMenu();
-          }}
-          className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-        >
-          <span className="flex items-center gap-2">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-            Toggle theme
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">Light/Dark</span>
-        </button>
-
-        {/* Divider */}
-        <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
-
         {/* Settings toggles inline */}
         <label className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800 cursor-pointer select-none">
           <span className="flex items-center gap-2">
@@ -183,21 +193,39 @@ export function Header({
         <div className="my-1 h-px bg-gray-200/70 dark:bg-gray-700/60" />
 
         {isAuthenticated ? (
-          <button
-            onClick={() => {
-              logout();
-              closeMenu();
-            }}
-            className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/30"
-          >
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M16 13v-2H7V8l-5 4 5 4v-3h9z" />
-              </svg>
-              Logout
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">Exit</span>
-          </button>
+          <>
+            {/* My Profile Link */}
+            <Link
+              to="/profile"
+              onClick={() => closeMenu()}
+              className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                My Profile
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Edit</span>
+            </Link>
+
+            {/* Logout */}
+            <button
+              onClick={() => {
+                logout();
+                closeMenu();
+              }}
+              className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/30"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M16 13v-2H7V8l-5 4 5 4v-3h9z" />
+                </svg>
+                Logout
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Exit</span>
+            </button>
+          </>
         ) : (
           <Button
             onClick={() => {
@@ -233,7 +261,7 @@ export function Header({
         scrolled ? "py-2" : "py-2.5",
       ].join(" ")}
     >
-      {/* Desktop Header - Rounded with margins */}
+      {/* Desktop/Tablet Header - Rounded with margins */}
       <div
         className={[
           "hidden sm:block relative mx-auto px-4 sm:px-6 md:px-8 py-2 rounded-xl sm:mx-2 md:mx-4 lg:mx-6",
@@ -262,7 +290,7 @@ export function Header({
         {/* Content */}
         <div className="relative flex flex-wrap items-center justify-between gap-3 md:gap-4 py-1">
           {/* Logo + Nav */}
-          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0 min-w-[10rem]">
+          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
             <Link
               to="/"
               className="group h-9 w-36 md:w-40 overflow-hidden rounded-xl"
@@ -275,19 +303,20 @@ export function Header({
                 role="img"
               />
             </Link>
-            {/* Primary navigation (desktop) */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Primary navigation (desktop + tablet) - now shows on sm screens */}
+            <nav className="hidden sm:flex items-center gap-1">
               <Link to="/" className={navLinkClass('/')}>Home</Link>
               <Link to="/greathall" className={navLinkClass('/greathall')}>Great Hall</Link>
               <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
-              <Link to="/chat" className={navLinkClass('/chat')}>Chat</Link>
+              <Link to="/calendar" className={navLinkClass('/calendar')}>Calendar</Link>
+              <Link to="/pensieve" className={navLinkClass('/pensieve')}>Pensieve</Link>
             </nav>
           </div>
 
-          {/* Search + Theme */}
+          {/* Search + Theme + Menu */}
           <div className="flex items-center justify-end gap-2 md:gap-3 flex-1 flex-wrap">
             {/* Search */}
-            <div className={`relative transition-all duration-300 flex-1 min-w-[220px] max-w-full md:max-w-sm ${searchFocused ? '' : ''}`}>
+            <div className={`relative transition-all duration-300 flex-1 min-w-[180px] max-w-full md:max-w-sm ${searchFocused ? '' : ''}`}>
               <label htmlFor="search" className="sr-only">
                 Search members
               </label>
@@ -297,7 +326,7 @@ export function Header({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search name, roll, blood, hometown, phone..."
+                placeholder="Search name, roll, blood..."
                 className="w-full rounded-2xl border border-gray-300/70 bg-white/90 px-4 py-2 pl-11 pr-10 text-sm shadow-sm text-gray-900 placeholder-gray-500
                            focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white
                            dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-purple-400 dark:focus:ring-offset-gray-900"
@@ -339,18 +368,32 @@ export function Header({
                 </button>
               )}
             </div>
-            <div className={`flex items-center transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+            <div className={`flex items-center gap-2 transition-all duration-300 ${searchFocused ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+              {/* Notification bell */}
+              <NotificationBell />
+
+              {/* Theme toggle button - outside menu */}
+              <ThemeToggleButton />
+
+              {/* Menu button with profile picture */}
               <div className="relative" ref={actionsRef}>
                 <button
                   onClick={() => setActionsOpen(!actionsOpen)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-3 h-9 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100 hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-300/70 bg-white/90 px-2 h-9 text-sm font-medium shadow-sm transition text-gray-800 dark:text-gray-100 hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
                   aria-haspopup="true"
                   aria-expanded={actionsOpen}
                 >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  <span className="hidden md:inline">Menu</span>
+                  {isAuthenticated && user ? (
+                    <img
+                      src={user.avatar || '/default-avatar.svg'}
+                      alt={user.name || 'Profile'}
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
                   <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clipRule="evenodd" />
                   </svg>
@@ -373,27 +416,43 @@ export function Header({
             className="flex-1 rounded-full border border-gray-300/50 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
             aria-label="Search for wizards"
           />
+          {/* Notification bell */}
+          <NotificationBell />
+
+          {/* Theme toggle button - outside menu */}
+          <ThemeToggleButton />
+
+          {/* Menu button with profile picture */}
           <div className="relative" ref={mobileActionsRef}>
             <button
               onClick={() => setMobileActionsOpen(!mobileActionsOpen)}
-              className="inline-flex items-center justify-center h-10 w-10 rounded-full border border-gray-300/60 bg-white/90 text-gray-800 shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900"
+              className="inline-flex items-center justify-center h-10 w-10 rounded-full border border-gray-300/60 bg-white/90 text-gray-800 shadow-sm transition hover:bg-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-600/50 dark:bg-gray-800/90 dark:text-gray-100 dark:hover:bg-gray-700/90 dark:focus-visible:ring-purple-400 dark:focus-visible:ring-offset-gray-900 overflow-hidden"
               aria-haspopup="true"
               aria-expanded={mobileActionsOpen}
               aria-label="Open menu"
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {isAuthenticated && user ? (
+                <img
+                  src={user.avatar || '/default-avatar.svg'}
+                  alt={user.name || 'Profile'}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
             </button>
             {mobileActionsOpen && renderMenuContent(() => setMobileActionsOpen(false), "right-0")}
           </div>
         </div>
-        {/* Primary navigation (mobile) */}
-        <nav className="mt-2 -mx-1 flex items-center gap-1 overflow-x-auto no-scrollbar">
+        {/* Primary navigation (mobile) - centered */}
+        <nav className="mt-2 flex items-center justify-center gap-1 overflow-x-auto no-scrollbar">
           <Link to="/" className={navLinkClass('/')}>Home</Link>
-          <Link to="/greathall" className={navLinkClass('/greathall')}>Great Hall</Link>
+          <Link to="/greathall" className={navLinkClass('/greathall')}>Hall</Link>
           <Link to="/owlery" className={navLinkClass('/owlery')}>Owlery</Link>
-          <Link to="/chat" className={navLinkClass('/chat')}>Chat</Link>
+          <Link to="/calendar" className={navLinkClass('/calendar')}>Calendar</Link>
+          <Link to="/pensieve" className={navLinkClass('/pensieve')}>Pensieve</Link>
         </nav>
       </div>
 

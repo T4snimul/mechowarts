@@ -235,9 +235,24 @@ export function animateCount(
 export const RUET_EMAIL_REGEX = /^(24080\d{2})@student\.ruet\.ac\.bd$/i;
 
 /**
+ * Check if we're in development mode
+ */
+export function isDevelopment(): boolean {
+  return import.meta.env.DEV || import.meta.env.MODE === 'development';
+}
+
+/**
  * Validate RUET email format
+ * In development mode, any valid email is allowed
+ * In production, only RUET emails are allowed
  */
 export function isValidRuetEmail(email: string): boolean {
+  // In development, allow any valid email format
+  if (isDevelopment()) {
+    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return basicEmailRegex.test(email);
+  }
+  // In production, enforce RUET email restriction
   return RUET_EMAIL_REGEX.test(email);
 }
 

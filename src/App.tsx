@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppDataProvider } from '@/contexts/AppDataContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 
@@ -13,6 +14,11 @@ const LoginPage = lazy(() => import('@/pages/LoginPage').then(module => ({ defau
 const GreatHallPage = lazy(() => import('@/pages/GreatHallPage').then(module => ({ default: module.GreatHallPage })));
 const EnhancedUserDetailPage = lazy(() => import('@/pages/EnhancedUserDetailPage').then(module => ({ default: module.EnhancedUserDetailPage })));
 const OwleryPage = lazy(() => import('@/pages/OwleryPage').then(module => ({ default: module.OwleryPage })));
+const PomodoroPage = lazy(() => import('@/pages/PomodoroPage').then(module => ({ default: module.PomodoroPage })));
+const MaterialsPage = lazy(() => import('@/pages/MaterialsPage').then(module => ({ default: module.MaterialsPage })));
+const ProfileEditPage = lazy(() => import('@/pages/ProfileEditPage').then(module => ({ default: module.ProfileEditPage })));
+const CalendarPage = lazy(() => import('@/pages/CalendarPage').then(module => ({ default: module.CalendarPage })));
+const PensievePage = lazy(() => import('@/pages/PensievePage').then(module => ({ default: module.PensievePage })));
 const AuthSuccessPage = lazy(() => import('@/pages/AuthPages').then(module => ({ default: module.AuthSuccessPage })));
 const AuthFailedPage = lazy(() => import('@/pages/AuthPages').then(module => ({ default: module.AuthFailedPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })));
@@ -32,32 +38,39 @@ function App() {
       <ThemeProvider>
         <SettingsProvider>
           <AuthProvider>
-            <AppDataProvider>
-              <ScrollToTop />
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Landing Page */}
-                  <Route path="/" element={<LandingPage />} />
+            <NotificationProvider>
+              <AppDataProvider>
+                <ScrollToTop />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Landing Page */}
+                    <Route path="/" element={<LandingPage />} />
 
-                  {/* Auth Routes */}
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/auth-success" element={<AuthSuccessPage />} />
-                  <Route path="/login-failed" element={<AuthFailedPage />} />
+                    {/* Auth Routes */}
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/auth-success" element={<AuthSuccessPage />} />
+                    <Route path="/login-failed" element={<AuthFailedPage />} />
 
-                  {/* Main Routes */}
-                  <Route path="/greathall" element={<GreatHallPage />} />
-                  <Route path="/wizard/:roll" element={<EnhancedUserDetailPage />} />
-                  <Route path="/owlery" element={<OwleryPage />} />
+                    {/* Main Routes */}
+                    <Route path="/greathall" element={<GreatHallPage />} />
+                    <Route path="/wizard/:roll" element={<EnhancedUserDetailPage />} />
+                    <Route path="/owlery" element={<OwleryPage />} />
+                    <Route path="/pomodoro" element={<PomodoroPage />} />
+                    <Route path="/materials" element={<MaterialsPage />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/pensieve" element={<PensievePage />} />
+                    <Route path="/profile" element={<ProfileEditPage />} />
 
-                  {/* Legacy redirects */}
-                  <Route path="/explore" element={<Navigate to="/greathall" replace />} />
-                  <Route path="/chat" element={<Navigate to="/owlery" replace />} />
+                    {/* Legacy redirects */}
+                    <Route path="/explore" element={<Navigate to="/greathall" replace />} />
+                    <Route path="/chat" element={<Navigate to="/owlery" replace />} />
 
-                  {/* 404 - Not Found */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Suspense>
-            </AppDataProvider>
+                    {/* 404 - Not Found */}
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </Suspense>
+              </AppDataProvider>
+            </NotificationProvider>
           </AuthProvider>
         </SettingsProvider>
       </ThemeProvider>

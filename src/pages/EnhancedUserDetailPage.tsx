@@ -78,8 +78,8 @@ export function EnhancedUserDetailPage() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Student Not Found
           </h2>
-          <Button onClick={() => navigate('/greathall')}>
-            Return to Great Hall
+          <Button onClick={() => navigate(-1)}>
+            ← Go Back
           </Button>
         </div>
       </div>
@@ -103,7 +103,7 @@ export function EnhancedUserDetailPage() {
             <div className="relative">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
                 <img
-                  src={person.avatar || '/default-avatar.png'}
+                  src={person.avatar || '/default-avatar.svg'}
                   alt={person.name}
                   className="w-full h-full object-cover"
                 />
@@ -370,10 +370,10 @@ export function EnhancedUserDetailPage() {
         {/* Back Button */}
         <div className="mt-8 text-center">
           <Button
-            onClick={() => navigate('/greathall')}
+            onClick={() => navigate(-1)}
             className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700"
           >
-            ← Back to Great Hall
+            ← Go Back
           </Button>
         </div>
       </div>

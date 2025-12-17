@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { authApi, setAuthToken } from '@/utils/api';
-import { isValidRuetEmail } from '@/utils';
+import { isValidRuetEmail, isDevelopment } from '@/utils';
 import type { AuthUser } from '@/types';
 
 // ============================================
@@ -141,7 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     if (!isValidRuetEmail(email)) {
-      setError('Use your RUET email (24080xx@student.ruet.ac.bd)');
+      const errorMsg = isDevelopment()
+        ? 'Please enter a valid email address'
+        : 'Use your RUET email (24080xx@student.ruet.ac.bd)';
+      setError(errorMsg);
       return false;
     }
 

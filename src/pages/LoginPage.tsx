@@ -3,17 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function LoginPage() {
-  const { sendMagicLink, isAuthenticated, isLoading, error } = useAuth();
+  const { sendMagicLink, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus(null);
+    setStatus('sending');
+    setStatusMessage(null);
+    clearError?.();
+
     const ok = await sendMagicLink(email.trim());
     if (ok) {
-      setStatus('Magic link sent. Check your RUET inbox and click the link, then return here.');
+      setStatus('sent');
+      setStatusMessage('✨ Magic link sent! Check your email inbox and click the link to sign in.');
+    } else {
+      setStatus('error');
     }
   };
 
@@ -97,26 +104,70 @@ export function LoginPage() {
                 placeholder="24080xx@student.ruet.ac.bd"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-purple-200/60 focus:outline-none focus:ring-2 focus:ring-amber-300/80"
+                disabled={status === 'sending'}
+                className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-purple-200/60 focus:outline-none focus:ring-2 focus:ring-amber-300/80 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/50 active:scale-[0.98]"
+                disabled={status === 'sending' || isLoading}
+                className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/50 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <div className="relative z-10 flex items-center justify-center gap-3">
-                  <span className="text-lg">Send magic link</span>
-                  <span className="text-sm text-white/80">(check email)</span>
+                  {status === 'sending' ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span className="text-lg">Sending magic link...</span>
+                    </>
+                  ) : status === 'sent' ? (
+                    <>
+                      <span className="text-lg">✓ Check your email</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-lg">Send magic link</span>
+                      <span className="text-sm text-white/80">✉️</span>
+                    </>
+                  )}
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </button>
             </form>
 
-            {status && (
-              <p className="mt-4 text-center text-sm text-amber-200/80">{status}</p>
+            {/* Success message */}
+            {status === 'sent' && statusMessage && (
+              <div className="mt-4 p-4 bg-green-500/20 border border-green-400/30 rounded-xl">
+                <p className="text-center text-sm text-green-200">{statusMessage}</p>
+                <p className="text-center text-xs text-green-200/70 mt-2">
+                  Didn't receive it? Check spam folder or{' '}
+                  <button
+                    onClick={() => setStatus('idle')}
+                    className="underline hover:text-green-100"
+                  >
+                    try again
+                  </button>
+                </p>
+              </div>
             )}
-            {error && (
-              <p className="mt-2 text-center text-sm text-red-200/90">{error}</p>
+
+            {/* Error message */}
+            {(error || status === 'error') && (
+              <div className="mt-4 p-4 bg-red-500/20 border border-red-400/30 rounded-xl">
+                <p className="text-center text-sm text-red-200">
+                  {error || 'Something went wrong. Please try again.'}
+                </p>
+                <button
+                  onClick={() => {
+                    setStatus('idle');
+                    clearError?.();
+                  }}
+                  className="w-full mt-2 text-xs text-red-200/70 hover:text-red-100 underline"
+                >
+                  Try again
+                </button>
+              </div>
             )}
 
             {/* Info text */}

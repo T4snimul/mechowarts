@@ -44,8 +44,15 @@ export function Modal({
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
       previousActiveElement.current = document.activeElement;
-      // Focus the modal
-      setTimeout(() => modalRef.current?.focus(), 10);
+      // Focus the modal only if no input inside is already focused
+      setTimeout(() => {
+        const activeElement = document.activeElement;
+        const modalElement = modalRef.current;
+        // Only focus modal if nothing inside is focused yet
+        if (modalElement && !modalElement.contains(activeElement)) {
+          modalRef.current?.focus();
+        }
+      }, 50);
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
     }

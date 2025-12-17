@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useAppData } from '@/contexts/AppDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getHouseClasses, cn } from '@/utils';
+import { Header } from '@/components/Header';
 import { CharacterImage } from '@/components/ui/CharacterImage';
 import { MagicalBackground } from '@/components/ui/MagicalBackground';
 
@@ -12,6 +14,7 @@ export function UserDetailPage() {
   const navigate = useNavigate();
   const { people } = useAppData();
   const { enableAnimations } = useSettings();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'about' | 'skills' | 'magical'>('about');
 
   // Scroll to top on mount
@@ -45,6 +48,7 @@ export function UserDetailPage() {
   }
 
   const { ring } = getHouseClasses(person.house);
+  const isOwnProfile = isAuthenticated && user?.roll === person.roll;
 
   const handleContactClick = (e: React.MouseEvent, url: string) => {
     e.preventDefault();
@@ -55,23 +59,8 @@ export function UserDetailPage() {
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/40 to-purple-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <MagicalBackground />
 
-      {/* Header - Back button */}
-      <div className="relative z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
-          <motion.button
-            initial={enableAnimations ? { opacity: 0, x: -20 } : false}
-            animate={enableAnimations ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
-            whileHover={enableAnimations ? { x: -4 } : {}}
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100/50 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-          </motion.button>
-        </div>
-      </div>
+      {/* Header */}
+      <Header />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Cover image section */}
@@ -159,6 +148,17 @@ export function UserDetailPage() {
 
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-2 pt-3">
+                  {isOwnProfile && (
+                    <motion.button
+                      whileHover={enableAnimations ? { scale: 1.05 } : {}}
+                      whileTap={enableAnimations ? { scale: 0.95 } : {}}
+                      onClick={() => navigate('/profile')}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200"
+                    >
+                      <span>✏️</span>
+                      Edit Profile
+                    </motion.button>
+                  )}
                   {person.phone && (
                     <motion.button
                       whileHover={enableAnimations ? { scale: 1.05 } : {}}

@@ -22,6 +22,7 @@ const MaterialsPage = lazy(() => import('@/pages/MaterialsPage').then(module => 
 const ProfileEditPage = lazy(() => import('@/pages/ProfileEditPage').then(module => ({ default: module.ProfileEditPage })));
 const CalendarPage = lazy(() => import('@/pages/CalendarPage').then(module => ({ default: module.CalendarPage })));
 const PensievePage = lazy(() => import('@/pages/PensievePage').then(module => ({ default: module.PensievePage })));
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AuthSuccessPage = lazy(() => import('@/pages/AuthPages').then(module => ({ default: module.AuthSuccessPage })));
 const AuthFailedPage = lazy(() => import('@/pages/AuthPages').then(module => ({ default: module.AuthFailedPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })));
@@ -64,6 +65,7 @@ function AppContent() {
           <Route path="/library" element={<MaterialsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/pensieve" element={<PensievePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfileEditPage />} />
 
           {/* Legacy redirects */}

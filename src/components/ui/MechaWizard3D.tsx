@@ -56,8 +56,9 @@ function CameraController({ mouseX, mouseY }: { mouseX: number; mouseY: number }
   const targetY = useRef(0);
 
   useFrame(() => {
-    targetX.current += (mouseX * 0.5 - targetX.current) * 0.05;
-    targetY.current += (mouseY * 0.3 - targetY.current) * 0.05;
+    // Increase rotation range to 180 degrees (PI radians) on X axis
+    targetX.current += (mouseX * Math.PI * 0.5 - targetX.current) * 0.05; // Now rotates up to 90° each direction = 180° total
+    targetY.current += (mouseY * 0.5 - targetY.current) * 0.05;
 
     const radius = 4;
     const baseY = 1.5;

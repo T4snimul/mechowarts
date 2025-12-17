@@ -14,4 +14,24 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    // Optimize chunk splitting for production
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'framer': ['framer-motion'],
+          'ui': ['@supabase/supabase-js', 'socket.io-client'],
+        },
+      },
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 600,
+    // Disable source maps for production
+    sourcemap: false,
+    // Use esbuild for minification (default, fast)
+    minify: 'esbuild',
+  },
 });

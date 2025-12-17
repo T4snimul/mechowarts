@@ -37,7 +37,7 @@ export function AppProvider({
   const filteredPeople = React.useMemo(() => {
     const q = filters.query.toLowerCase().trim();
 
-    let list = people.filter((p) => {
+    const list = people.filter((p) => {
       return (
         !q ||
         p.name.toLowerCase().includes(q) ||

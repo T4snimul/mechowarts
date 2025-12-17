@@ -203,7 +203,7 @@ export function ProfileEditPage() {
             setPrivacy({ ...DEFAULT_PRIVACY_SETTINGS, ...response.data.privacy });
           }
         }
-      } catch (err) {
+      } catch {
         console.log('No existing profile found');
         if (user) {
           setFormData(prev => ({

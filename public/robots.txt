@@ -1,0 +1,11 @@
+# Robots.txt for Mechowarts
+# Allow all bots to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow specific paths if needed
+# Disallow: /api/
+
+# Sitemap location (update when sitemap is generated)
+Sitemap: https://mechowarts.com/sitemap.xml

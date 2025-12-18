@@ -71,7 +71,6 @@ export function OwleryPage() {
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to Owlery');
       // Join global chat room
       newSocket.emit('join-group', { userId: user.id, userName: user.name });
     });

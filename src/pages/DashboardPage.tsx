@@ -15,7 +15,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'activity' | 'settings'>('overview');
+  type TabType = 'overview' | 'activity' | 'settings';
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showChangePwd, setShowChangePwd] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newPwd, setNewPwd] = useState('');
@@ -167,10 +168,10 @@ export function DashboardPage() {
             {/* Tabs */}
             <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} mb-6`}>
               <nav className="flex space-x-8">
-                {['overview', 'activity', 'settings'].map((tab) => (
+                {(['overview', 'activity', 'settings'] as const).map((tab) => (
                   <button
                     key={tab}
-                    onClick={() => setActiveTab(tab as any)}
+                    onClick={() => setActiveTab(tab)}
                     className={`pb-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${activeTab === tab
                         ? `border-purple-600 ${isDark ? 'text-purple-400' : 'text-purple-600'}`
                         : `border-transparent ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`

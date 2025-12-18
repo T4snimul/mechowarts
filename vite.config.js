@@ -33,5 +33,22 @@ export default defineConfig({
     sourcemap: false,
     // Use esbuild for minification (default, fast)
     minify: 'esbuild',
+    // Target modern browsers
+    target: 'es2020',
+    // Optimize CSS
+    cssMinify: true,
+  },
+  // Preview server configuration
+  preview: {
+    port: 4173,
+    strictPort: false,
+    host: true,
+  },
+  // Development server configuration
+  server: {
+    port: 5173,
+    strictPort: false,
+    host: true,
+    open: false,
   },
 });

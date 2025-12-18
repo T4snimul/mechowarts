@@ -116,6 +116,46 @@ Mechowarts is built with modern web magic:
 
 ---
 
+## 📚 Documentation
+
+- **[Deployment Guide](DEPLOYMENT.md)** - How to deploy Mechowarts to production
+- **[Production Checklist](PRODUCTION_CHECKLIST.md)** - Pre-deployment checklist
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
+
+---
+
+## 🚀 For Developers
+
+### Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
+
+# Run type checking
+npm run type-check
+```
+
+### Project Stack
+
+- React 19 + TypeScript
+- Vite 7 for build tooling
+- Tailwind CSS 4 for styling
+- Supabase for authentication
+- Socket.io for real-time chat
+- Three.js for 3D effects
+
+---
+
 ## 🌟 Start Your Magical Journey
 
 Ready to explore the wizarding world? [**Enter Mechowarts**](.) and begin your magical adventure today!

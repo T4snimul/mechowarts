@@ -99,6 +99,18 @@ export const authApi = {
       throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
     }
   },
+
+  /**
+   * Delete user account
+   */
+  async deleteAccount(): Promise<{ message: string }> {
+    try {
+      const response = await api.delete<{ message: string }>('/auth/account');
+      return response.data;
+    } catch (error) {
+      throw new ApiError(getErrorMessage(error), (error as AxiosError)?.response?.status);
+    }
+  },
 };
 
 // ============================================

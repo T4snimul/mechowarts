@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { UnifiedAuthModal } from '@/components/UnifiedAuthModal';
 import { Button } from '@/components/ui/Button';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
@@ -16,7 +15,6 @@ export function Header({
   query = '',
   setQuery,
 }: HeaderProps) {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
@@ -256,19 +254,21 @@ export function Header({
             </button>
           </>
         ) : (
-          <Button
-            onClick={() => {
-              setAuthModalOpen(true);
-              closeMenu();
-            }}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-            size="sm"
+          <Link
+            to="/login"
+            onClick={() => closeMenu()}
+            className="block w-full"
           >
-            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
-            </svg>
-            Sign in to MechoWarts
-          </Button>
+            <Button
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              size="sm"
+            >
+              <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+              </svg>
+              Sign in to MechoWarts
+            </Button>
+          </Link>
         )}
       </div>
 
@@ -459,10 +459,6 @@ export function Header({
           <Link to="/pensieve" className={navLinkClass('/pensieve')}>Memories</Link>
         </nav>
       </div>
-
-      {/* Auth Modal */}
-      <UnifiedAuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} mode="signin" />
-      {/* Settings panel removed: settings are inline in dropdown */}
     </header>
   );
 }

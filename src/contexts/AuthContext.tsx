@@ -27,6 +27,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
   refetchUser: () => Promise<void>;
   clearError: () => void;
 }
@@ -53,9 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await authApi.getMe();
       setUser(data.user);
+      return true;
     } catch (err) {
       console.error('[Auth] Fetch user failed:', err);
       setUser(null);
+      return false;
     }
   }, []);
 
@@ -194,8 +197,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    await fetchUser();
+    const userFetched = await fetchUser();
     setIsLoading(false);
+
+    if (!userFetched) {
+      setError('Failed to load user data. Please try again.');
+      return false;
+    }
+
     return true;
   }, [fetchUser]);
 
@@ -310,6 +319,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
+   * Delete user account
+   */
+  const deleteAccount = useCallback(async (): Promise<boolean> => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await authApi.deleteAccount();
+
+      // Sign out after successful deletion
+      await supabase.auth.signOut();
+      setAuthToken(null);
+      setUser(null);
+      setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error('[Auth] Account deletion failed:', err);
+      setError('Failed to delete account');
+      setIsLoading(false);
+      return false;
+    }
+  }, []);
+
+  /**
    * Refetch user data
    */
   const refetchUser = useCallback(async () => {
@@ -338,10 +371,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       sendPasswordReset,
       logout,
+      deleteAccount,
       refetchUser,
       clearError,
     }),
-    [user, isLoading, error, sendMagicLink, signInWithPassword, signUp, updatePassword, sendPasswordReset, logout, refetchUser, clearError]
+    [user, isLoading, error, sendMagicLink, signInWithPassword, signUp, updatePassword, sendPasswordReset, logout, deleteAccount, refetchUser, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

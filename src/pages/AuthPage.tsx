@@ -89,14 +89,18 @@ export function AuthPage() {
       if (authMode === 'signin') {
         success = await signInWithPassword(trimmedEmail, password);
         if (success) {
-          setStatus('sent');
-          setStatusMessage('🔐 Login successful! Redirecting...');
+          // Reset form state - navigation will happen via useEffect
+          setStatus('idle');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+          // Auth state is now updated, useEffect will trigger navigation
         }
       } else {
         success = await signUp(trimmedEmail, password);
         if (success) {
           setStatus('sent');
-          setStatusMessage('✅ Account created! Redirecting...');
+          setStatusMessage('✅ Account created! Check your email to verify.');
         }
       }
     }

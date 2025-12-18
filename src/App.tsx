@@ -18,7 +18,6 @@ const EnhancedUserDetailPage = lazy(() => import('@/pages/EnhancedUserDetailPage
 const OwleryPage = lazy(() => import('@/pages/OwleryPage').then(module => ({ default: module.OwleryPage })));
 const PomodoroPage = lazy(() => import('@/pages/PomodoroPage').then(module => ({ default: module.PomodoroPage })));
 const MaterialsPage = lazy(() => import('@/pages/MaterialsPage').then(module => ({ default: module.MaterialsPage })));
-const ProfileEditPage = lazy(() => import('@/pages/ProfileEditPage').then(module => ({ default: module.ProfileEditPage })));
 const CalendarPage = lazy(() => import('@/pages/CalendarPage').then(module => ({ default: module.CalendarPage })));
 const PensievePage = lazy(() => import('@/pages/PensievePage').then(module => ({ default: module.PensievePage })));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -66,7 +65,8 @@ function AppContent() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/pensieve" element={<PensievePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/profile" element={<ProfileEditPage />} />
+          {/* Redirect /profile to /dashboard */}
+          <Route path="/profile" element={<Navigate to="/dashboard" replace />} />
 
           {/* Legacy redirects */}
           <Route path="/explore" element={<Navigate to="/greathall" replace />} />

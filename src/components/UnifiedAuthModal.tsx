@@ -66,16 +66,14 @@ export function UnifiedAuthModal({ isOpen, onClose, mode = 'signin' }: UnifiedAu
       if (authMode === 'signin') {
         success = await signInWithPassword(trimmedEmail, password);
         if (success) {
-          setStatus('sent');
-          setStatusMessage('✅ Signed in successfully!');
+          // Close modal immediately on successful signin - auth state will handle the rest
           onClose();
         }
       } else {
         success = await signUp(trimmedEmail, password);
         if (success) {
           setStatus('sent');
-          setStatusMessage('✅ Account created successfully!');
-          onClose();
+          setStatusMessage('✅ Account created! Check your email to verify.');
         }
       }
     }
@@ -147,8 +145,8 @@ export function UnifiedAuthModal({ isOpen, onClose, mode = 'signin' }: UnifiedAu
                 type="button"
                 onClick={() => { setAuthMode('signin'); setStatus('idle'); clearError(); }}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${authMode === 'signin'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                   }`}
               >
                 Sign In
@@ -157,8 +155,8 @@ export function UnifiedAuthModal({ isOpen, onClose, mode = 'signin' }: UnifiedAu
                 type="button"
                 onClick={() => { setAuthMode('signup'); setStatus('idle'); clearError(); }}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${authMode === 'signup'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                   }`}
               >
                 Sign Up
@@ -171,8 +169,8 @@ export function UnifiedAuthModal({ isOpen, onClose, mode = 'signin' }: UnifiedAu
                 type="button"
                 onClick={() => { setAuthMethod('magic'); setStatus('idle'); clearError(); }}
                 className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all ${authMethod === 'magic'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                   }`}
               >
                 ✨ Magic Link
@@ -181,8 +179,8 @@ export function UnifiedAuthModal({ isOpen, onClose, mode = 'signin' }: UnifiedAu
                 type="button"
                 onClick={() => { setAuthMethod('password'); setStatus('idle'); clearError(); }}
                 className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all ${authMethod === 'password'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                   }`}
               >
                 🔑 Password

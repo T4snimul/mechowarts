@@ -20,6 +20,19 @@ export type Theme = 'light' | 'dark' | 'system';
 /** Privacy level options (Facebook-like audience) */
 export type PrivacyLevel = 'public' | 'authenticated' | 'private';
 
+/** User roles */
+export type UserRole = 'admin' | 'moderator' | 'editor' | 'user';
+
+/** Permissions */
+export type Permission =
+  | 'manage_users'
+  | 'manage_content'
+  | 'manage_materials'
+  | 'moderate_chat'
+  | 'edit_any_profile'
+  | 'delete_content'
+  | 'view_analytics';
+
 // ============================================
 // Privacy Types
 // ============================================
@@ -89,6 +102,8 @@ export interface AuthUser {
   roll: string;
   avatar?: string;
   person?: Person;
+  role?: UserRole;
+  permissions?: Permission[];
 }
 
 // ============================================

@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { CommandPalette, useCommandPalette } from '@/components/ui/CommandPalette';
 import { FloatingControls } from '@/components/ui/FloatingControls';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 // Lazy load pages for better performance
 const LandingPage = lazy(() => import('@/pages/LandingPage').then(module => ({ default: module.LandingPage })));
@@ -82,19 +83,21 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider>
-        <SettingsProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <AppDataProvider>
-                <AppContent />
-              </AppDataProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </SettingsProvider>
-      </ThemeProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <ThemeProvider>
+          <SettingsProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <AppDataProvider>
+                  <AppContent />
+                </AppDataProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </SettingsProvider>
+        </ThemeProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
